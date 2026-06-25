@@ -19,9 +19,9 @@
         <div id="dynamic-fields-container">
             <div class="form-row-group">
                 <div class="form-group">
-                    <label for="bike_line">Bike Line</label>
+                    <label for="bike_line">Project Type</label>
                     <select id="bike_line" name="bike_line" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
-                        <option value="" disabled>Select Bike Line Type</option>
+                        <option value="" disabled>Select Project Type</option>
                         <option value="Damage" {% if record.bike_line == 'Damage' %}selected{% endif %}>Damage</option>
                         <option value="Mohnl" {% if record.bike_line == 'Mohnl' %}selected{% endif %}>Mohnl</option>
                         <option value="Gally" {% if record.bike_line == 'Gally' %}selected{% endif %}>Gally</option>
