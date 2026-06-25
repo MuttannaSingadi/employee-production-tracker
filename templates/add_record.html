@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Record</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_Style.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <div class="form-header">
+        <h2>Add New Record</h2>
+        <div class="action-buttons">
+            <button type="button" class="ctrl-btn add-btn" onclick="addNewFieldGroup()">+ Add Section</button>
+            <button type="button" class="ctrl-btn clear-btn" onclick="clearLastFieldGroup()">- Clear Last</button>
+        </div>
+    </div>
+    
+    <form method="POST">
+        <div id="dynamic-fields-container">
+            <div class="form-row-group">
+                <div class="form-group">
+                    <label for="bike_line">Bike Line</label>
+                    <select id="bike_line" name="bike_line" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                        <option value="" disabled selected>Select Bike Line Type</option>
+                        <option value="Damage">Damage</option>
+                        <option value="Mohnl">Mohnl</option>
+                        <option value="Gally">Gally</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="total_parts">Total Parts Loop Count</label>
+                    <input type="number" id="total_parts" name="total_parts" placeholder="Total Parts Loop Count" value="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="linear_km">Linear KM</label>
+                    <input type="number" id="linear_km" step="0.01" name="linear_km" placeholder="Linear KM" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="estimation">Estimation</label>
+                    <input type="number" id="estimation" step="0.01" name="estimation" placeholder="Estimation" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="employee_name">Alloted To</label>
+                    <input type="text" id="employee_name" name="employee_name" placeholder="Alloted To">
+                </div>
+
+                <div class="form-group">
+                    <label for="start_date">Start Date</label>
+                    <input type="date" id="start_date" name="start_date">
+                </div>
+
+                <div class="form-group">
+                    <label for="end_date">End Date</label>
+                    <input type="date" id="end_date" name="end_date">
+                </div>
+
+                <div class="form-group">
+                    <label for="completed_km">Completed KM</label>
+                    <input type="number" id="completed_km" step="0.01" name="completed_km" placeholder="Completed KM" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="pending_km">Pending KM</label>
+                    <input type="number" id="pending_km" step="0.01" name="pending_km" placeholder="Pending KM" readonly style="background-color: #f3f4f6; cursor: not-allowed;" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="time_taken">Time Taken</label>
+                    <input type="number" id="time_taken" step="0.01" name="time_taken" placeholder="Time Taken" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="count_val">Count</label>
+                    <input type="number" id="count_val" name="count_val" placeholder="Count" value="0">
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="progress_status">Status</label>
+                    <select id="progress_status" name="progress_status">
+                        <option value="">Select Status</option>
+                        <option value="IP" selected>IP</option>
+                        <option value="COMP">COMP</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn">Save New Record</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const linearInput = document.getElementById('linear_km');
+    const completedInput = document.getElementById('completed_km');
+
+    if (linearInput && completedInput) {
+        linearInput.addEventListener('input', calculatePendingKM);
+        completedInput.addEventListener('input', calculatePendingKM);
+    }
+});
+
+function calculatePendingKM() {
+    const linearKM = parseFloat(document.getElementById('linear_km').value) || 0;
+    const completedKM = parseFloat(document.getElementById('completed_km').value) || 0;
+    const pendingKM = linearKM - completedKM;
+    document.getElementById('pending_km').value = pendingKM >= 0 ? pendingKM.toFixed(2) : "0.00";
+}
+
+function addNewFieldGroup() {
+    const container = document.getElementById('dynamic-fields-container');
+    const newGroup = document.createElement('div');
+    newGroup.className = 'form-row-group extra-group';
+    newGroup.innerHTML = `
+        <hr class="group-divider">
+        <div class="form-group">
+            <label>Extra Metric Label</label>
+            <input type="text" name="extra_metric_name[]" placeholder="e.g. QC Status / Note">
+        </div>
+        <div class="form-group">
+            <label>Extra Value</label>
+            <input type="text" name="extra_metric_value[]" placeholder="Value">
+        </div>
+    `;
+    container.appendChild(newGroup);
+}
+
+function clearLastFieldGroup() {
+    const container = document.getElementById('dynamic-fields-container');
+    const extraGroups = container.getElementsByClassName('extra-group');
+    if (extraGroups.length > 0) {
+        container.removeChild(extraGroups[extraGroups.length - 1]);
+    }
+}
+</script>
+</body>
+</html>

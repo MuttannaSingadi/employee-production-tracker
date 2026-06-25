@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QGIS Data Production Hub - Home</title>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --bg-light: #f8fafc;
+            --border: #e2e8f0;
+            --waps-dark: #020d1e; /* Extracted background tint from your logo */
+            --waps-cyan: #00b4f1; /* Extracted vibrant cyan color from your logo */
+            --waps-grey: #c2c7cc; /* Extracted metallic grey color from your logo */
+        }
+
+        body {
+            margin: 0;
+            padding-top: 80px;
+            background-color: #f1f5f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .navbar {
+            background-color: var(--waps-dark); /* Blends perfectly with your logo image */
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+            z-index: 1000;
+            border-bottom: 2px solid var(--waps-cyan); /* Minimalist branding accent line */
+        }
+
+        .navbar-brand-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .navbar-logo {
+            height: 42px; /* Keeps your branding element proportional and legible */
+            width: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        .navbar-brand {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+        }
+        
+        .brand-highlight {
+            color: var(--waps-cyan);
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 15px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .navbar-links a:hover, .navbar-links a.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .welcome-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            text-align: center;
+            max-width: 550px;
+            width: 90%;
+            margin-top: 40px;
+        }
+
+        .welcome-card h2 {
+            color: var(--primary);
+            margin-top: 0;
+            font-size: 2rem;
+        }
+
+        .welcome-card p {
+            color: #64748b;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .hub-btn {
+            background-color: var(--accent);
+            color: white;
+            padding: 14px 28px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: inline-block;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+            width: 80%;
+        }
+
+        .hub-btn:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px -1px rgba(59, 130, 246, 0.4);
+        }
+
+        .secondary-btn {
+            background-color: #10b981;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+        }
+
+        .secondary-btn:hover {
+            background-color: #059669;
+            box-shadow: 0 6px 12px -1px rgba(16, 185, 129, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="navbar-brand-container">
+            <img class="navbar-logo" src="../static/img/logo.png" alt="WAPS Logo">
+            <div class="navbar-brand">
+                QGIS Data <span class="brand-highlight">Production Hub</span>
+            </div>
+        </a>
+        
+        <ul class="navbar-links">
+            <li><a href="/" class="active">🏠 Home</a></li>
+            <li><a href="/index">📊 Master Spreadsheet</a></li>
+            <li><a href="/employee_report">👤 Date-Wise Tracker</a></li>
+            <li><a href="/add">➕ Add New Record</a></li>
+        </ul>
+    </nav>
+
+    <div class="welcome-card">
+        <h2>Welcome to the Tracking Control Hub</h2>
+        <p>Monitor real-time polygon geometric progression, distribute employee analytical data workloads, and review operations distances securely.</p>
+        
+        <div class="btn-group">
+            <a href="/index" class="hub-btn">🔍 View Master Records (Index)</a>
+            <a href="/employee_report" class="hub-btn secondary-btn">📅 Open Date-Wise Individual Tracker</a>
+        </div>
+    </div>
+
+</body>
+</html>

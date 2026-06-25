@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Record</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_Style.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <div class="form-header">
+        <h2>Edit Record - {{ record.part_no }}</h2>
+        <div class="action-buttons">
+            <button type="button" class="ctrl-btn add-btn" onclick="addNewFieldGroup()">+ Add Section</button>
+            <button type="button" class="ctrl-btn clear-btn" onclick="clearLastFieldGroup()">- Clear Last</button>
+        </div>
+    </div>
+    
+    <form method="POST">
+        <div id="dynamic-fields-container">
+            <div class="form-row-group">
+                <div class="form-group">
+                    <label for="bike_line">Bike Line</label>
+                    <select id="bike_line" name="bike_line" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                        <option value="" disabled>Select Bike Line Type</option>
+                        <option value="Damage" {% if record.bike_line == 'Damage' %}selected{% endif %}>Damage</option>
+                        <option value="Mohnl" {% if record.bike_line == 'Mohnl' %}selected{% endif %}>Mohnl</option>
+                        <option value="Gally" {% if record.bike_line == 'Gally' %}selected{% endif %}>Gally</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="linear_km">Linear KM</label>
+                    <input type="number" id="linear_km" step="0.01" name="linear_km" value="{{ '' if record.linear_km == 0 else record.linear_km }}" placeholder="Linear KM">
+                </div>
+
+                <div class="form-group">
+                    <label for="estimation">Estimation</label>
+                    <input type="number" id="estimation" step="0.01" name="estimation" value="{{ '' if record.estimation == 0 else record.estimation }}" placeholder="Estimation">
+                </div>
+
+                <div class="form-group">
+                    <label for="employee_name">Alloted To</label>
+                    <input type="text" id="employee_name" name="employee_name" value="{{ record.employee_name }}" placeholder="Alloted To">
+                </div>
+
+                <div class="form-group">
+                    <label for="start_date">Start Date</label>
+                    <input type="date" id="start_date" name="start_date" value="{{ record.start_date }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="end_date">End Date</label>
+                    <input type="date" id="end_date" name="end_date" value="{{ record.end_date }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="completed_km">Completed KM</label>
+                    <input type="number" id="completed_km" step="0.01" name="completed_km" value="{{ '' if record.completed_km == 0 else record.completed_km }}" placeholder="Completed KM">
+                </div>
+
+                <div class="form-group">
+                    <label for="pending_km">Pending KM</label>
+                    <input type="number" id="pending_km" step="0.01" name="pending_km" value="{{ '' if record.pending_km == 0 else record.pending_km }}" placeholder="Pending KM" readonly style="background-color: #f3f4f6; cursor: not-allowed;">
+                </div>
+
+                <div class="form-group">
+                    <label for="time_taken">Time Taken</label>
+                    <input type="number" id="time_taken" step="0.01" name="time_taken" value="{{ '' if record.time_taken == 0 else record.time_taken }}" placeholder="Time Taken">
+                </div>
+
+                <div class="form-group">
+                    <label for="count_val">Count</label>
+                    <input type="number" id="count_val" name="count_val" value="{{ '' if record.count_val == 0 else record.count_val }}" placeholder="Count">
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="progress_status">Status</label>
+                    <select id="progress_status" name="progress_status">
+                        <option value="IP" {% if record.progress_status == 'IP' %}selected{% endif %}>IP</option>
+                        <option value="COMP" {% if record.progress_status == 'COMP' %}selected{% endif %}>COMP</option>
+                    </select>
+                </div>
+            </div>
+
+            {% if record.extra_data %}
+                {% for key, val in record.extra_data.items() %}
+                <div class="form-row-group extra-group">
+                    <hr class="group-divider">
+                    <div class="form-group">
+                        <label>Extra Metric Label</label>
+                        <input type="text" name="extra_metric_name[]" value="{{ key }}" placeholder="e.g. QC Status / Note">
+                    </div>
+                    <div class="form-group">
+                        <label>Extra Value</label>
+                        <input type="text" name="extra_metric_value[]" value="{{ val }}" placeholder="Value">
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <button type="submit" class="submit-btn">Update Record</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const linearInput = document.getElementById('linear_km');
+    const completedInput = document.getElementById('completed_km');
+
+    if (linearInput && completedInput) {
+        calculatePendingKM();
+        linearInput.addEventListener('input', calculatePendingKM);
+        completedInput.addEventListener('input', calculatePendingKM);
+    }
+});
+
+function calculatePendingKM() {
+    const linearKM = parseFloat(document.getElementById('linear_km').value) || 0;
+    const completedKM = parseFloat(document.getElementById('completed_km').value) || 0;
+    const pendingKM = linearKM - completedKM;
+    document.getElementById('pending_km').value = pendingKM >= 0 ? pendingKM.toFixed(2) : "0.00";
+}
+
+function addNewFieldGroup() {
+    const container = document.getElementById('dynamic-fields-container');
+    const newGroup = document.createElement('div');
+    newGroup.className = 'form-row-group extra-group';
+    newGroup.innerHTML = `
+        <hr class="group-divider">
+        <div class="form-group">
+            <label>Extra Metric Label</label>
+            <input type="text" name="extra_metric_name[]" placeholder="e.g. QC Status / Note">
+        </div>
+        <div class="form-group">
+            <label>Extra Value</label>
+            <input type="text" name="extra_metric_value[]" placeholder="Value">
+        </div>
+    `;
+    container.appendChild(newGroup);
+}
+
+function clearLastFieldGroup() {
+    const container = document.getElementById('dynamic-fields-container');
+    const extraGroups = container.getElementsByClassName('extra-group');
+    if (extraGroups.length > 0) {
+        container.removeChild(extraGroups[extraGroups.length - 1]);
+    }
+}
+</script>
+</body>
+</html>

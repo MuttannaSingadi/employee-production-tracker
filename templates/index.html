@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QGIS Daily Tracker - Master Spreadsheet</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --accent-blue: #3b82f6;
+            --accent-blue-hover: #2563eb;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-red-hover: #dc2626;
+            --bg-main: #f1f5f9;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-main);
+            padding-bottom: 60px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        /* Dashboard Top Header Action Panel */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: var(--card-bg);
+            padding: 20px 28px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        .dashboard-header h1 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .action-button-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-add {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-add:hover {
+            background-color: var(--accent-blue-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-home {
+            background-color: #475569;
+            color: white;
+        }
+
+        .btn-home:hover {
+            background-color: #334155;
+        }
+
+        .btn-delete {
+            background-color: white;
+            color: var(--accent-red);
+            border: 1px solid #fca5a5;
+        }
+
+        .btn-delete:hover {
+            background-color: #fef2f2;
+            color: var(--accent-red-hover);
+            border-color: var(--accent-red);
+        }
+
+        /* Search Bar Component */
+        .search-wrapper {
+            background: var(--card-bg);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .search-input-container {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 40px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 0.95rem;
+            color: var(--text-main);
+            background-color: #f8fafc;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Analytics Chart Layout Structure */
+        .analytics-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 35px;
+        }
+
+        .analytics-container {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            flex: 1;
+            min-width: 320px;
+        }
+
+        .analytics-container h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: var(--primary);
+            font-weight: 600;
+            border-left: 4px solid var(--accent-blue);
+            padding-left: 10px;
+        }
+
+        /* Modernized Data Table Spreadsheet Containers */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background-color: #64748b;
+            color: white;
+            padding: 14px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            color: #334155;
+            white-space: nowrap;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        /* Functional Text Formatting Components */
+        .text-bold {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .cell-action-link {
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: color 0.2s ease;
+        }
+
+        .link-edit {
+            color: var(--accent-blue);
+        }
+        .link-edit:hover {
+            color: var(--accent-blue-hover);
+            text-decoration: underline;
+        }
+
+        .link-delete {
+            color: var(--accent-red);
+        }
+        .link-delete:hover {
+            color: var(--accent-red-hover);
+            text-decoration: underline;
+        }
+
+        /* Embedded Status Indicators */
+        .status-pill {
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            display: inline-block;
+        }
+        .status-pill-comp {
+            background: #d1fae5;
+            color: #059669;
+        }
+        .status-pill-ip {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        /* Consolidated Aggregations Footer Grid Row */
+        .summary-row {
+            background-color: #e2e8f0 !important;
+            font-weight: 700;
+        }
+        
+        .summary-row td {
+            color: var(--primary);
+            border-top: 2px solid #cbd5e1;
+            padding: 16px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="dashboard-header">
+        <h1>📊 QGIS Daily Polygon Tracker</h1>
+        <div class="action-button-group">
+            <a href="/" class="btn btn-home">🏠 Home Portal</a>
+            <a href="/add" class="btn btn-add">➕ Add New Record</a>
+            <a href="/delete_all" class="btn btn-delete" onclick="return confirm('CRITICAL: Are you absolutely sure you want to permanently purge all data rows from the database?')">⚠️ Delete All</a>
+        </div>
+    </div>
+
+    <div class="analytics-wrapper">
+        <div class="analytics-container">
+            <h3>Overall Distance Progress Analysis</h3>
+            <canvas id="progressChart" width="400" height="180"></canvas>
+        </div>
+
+        <div class="analytics-container">
+            <h3>Progress Analysis By Alloted Person</h3>
+            <canvas id="personChart" width="400" height="180"></canvas>
+        </div>
+    </div>
+
+    <div class="search-wrapper">
+        <div class="search-input-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="tableSearch" class="search-input" placeholder="Search by Bike Line, Part No, or Allocated Employee...">
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>SN No</th>
+                    <th>Bike Line</th>
+                    <th>Part No</th>
+                    <th>Linear KM</th>
+                    <th>Estimation</th>
+                    <th>Alloted To</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Completed KM</th>
+                    <th>Pending KM</th>
+                    <th>Time Taken</th>
+                    <th>Count</th>
+                    <th>Status</th>
+                    <th>Extra Metrics</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in records %}
+                <tr class="record-row" 
+                    data-linear="{{ row.linear_km or 0 }}" 
+                    data-estimation="{{ row.estimation or 0 }}"
+                    data-completed="{{ row.completed_km or 0 }}"
+                    data-pending="{{ row.pending_km or 0 }}"
+                    data-timetaken="{{ row.time_taken or 0 }}"
+                    data-countval="{{ row.count_val or 0 }}"
+                    data-employee="{{ row.employee_name or 'Unassigned' }}">
+                    <td>{{ loop.index }}</td>
+                    <td class="text-bold searchable-field">{{ row.bike_line }}</td>
+                    <td class="searchable-field"><code>{{ row.part_no }}</code></td>
+                    <td>{{ row.linear_km }}</td>
+                    <td>{{ row.estimation }}</td>
+                    <td class="searchable-field">{{ row.employee_name if row.employee_name else '<span style="color: #94a3b8; font-style: italic;">Unassigned</span>'|safe }}</td>
+                    <td>{{ row.start_date }}</td>
+                    <td>{{ row.end_date }}</td>
+                    <td>{{ row.completed_km }}</td>
+                    <td>{{ row.pending_km }}</td>
+                    <td>{{ row.time_taken }} hrs</td>
+                    <td>{{ row.count_val }}</td>
+                    <td>
+                        <span class="status-pill {% if row.progress_status == 'COMP' %}status-pill-comp{% else %}status-pill-ip{% endif %}">
+                            {{ row.progress_status }}
+                        </span>
+                    </td>
+                    
+                    <td>
+                        {% if row.extra_data %}
+                            <div style="font-size: 0.8rem; line-height: 1.4;">
+                            {% for key, val in row.extra_data.items() %}
+                                <div style="margin-bottom: 2px;">
+                                    <span style="color: var(--text-muted); font-weight: 600;">{{ key }}:</span> 
+                                    <span style="color: var(--text-main);">{{ val }}</span>
+                                </div>
+                            {% endfor %}
+                            </div>
+                        {% else %}
+                            <span style="color: #94a3b8; font-style: italic; font-size: 0.85rem;">None</span>
+                        {% endif %}
+                    </td>
+
+                    <td><a href="/edit/{{ row.id }}" class="cell-action-link link-edit">✏️ Edit</a></td>
+                    <td><a href="/delete/{{ row.id }}" class="cell-action-link link-delete" onclick="return confirm('Delete this record?')">🗑️ Delete</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+            <tfoot>
+                <tr class="summary-row">
+                    <td>Sum</td>
+                    <td id="total-bike-lines">-</td>
+                    <td id="total-parts">0 Parts</td>
+                    <td id="total-linear">0.00</td>
+                    <td id="total-estimation">0.00</td>
+                    <td id="total-people">0 People</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td id="total-completed">0.00</td>
+                    <td id="total-pending">0.00</td>
+                    <td id="total-time">0.00</td>
+                    <td id="total-count">0</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    let totalLinear = 0;
+    let totalEstimation = 0;
+    let totalCompleted = 0;
+    let totalPending = 0;
+    let totalTimeTaken = 0;
+    let totalCountVal = 0;
+
+    let partCount = 0;
+    let uniquePeople = new Set();
+    let uniqueBikeLines = new Set();
+    let personData = {};
+
+    const rows = document.querySelectorAll('.record-row');
+    rows.forEach(row => {
+        const linear = parseFloat(row.getAttribute('data-linear')) || 0;
+        const estimation = parseFloat(row.getAttribute('data-estimation')) || 0;
+        const completed = parseFloat(row.getAttribute('data-completed')) || 0;
+        const pending = parseFloat(row.getAttribute('data-pending')) || 0;
+        const timeTaken = parseFloat(row.getAttribute('data-timetaken')) || 0;
+        const countVal = parseInt(row.getAttribute('data-countval')) || 0;
+        
+        const employee = row.getAttribute('data-employee').trim();
+        const bikeLineCell = row.cells[1].innerText.trim();
+
+        totalLinear += linear;
+        totalEstimation += estimation;
+        totalCompleted += completed;
+        totalPending += pending;
+        totalTimeTaken += timeTaken;
+        totalCountVal += countVal;
+        
+        partCount++; 
+
+        if (employee && employee !== "Unassigned" && employee !== "") {
+            uniquePeople.add(employee);
+        }
+        if (bikeLineCell) {
+            uniqueBikeLines.add(bikeLineCell);
+        }
+
+        let empKey = employee || "Unassigned";
+        if (!personData[empKey]) {
+            personData[empKey] = { completed: 0, pending: 0 };
+        }
+        personData[empKey].completed += completed;
+        personData[empKey].pending += pending;
+    });
+
+    document.getElementById('total-bike-lines').innerText = uniqueBikeLines.size + " Lines";
+    document.getElementById('total-parts').innerText = partCount + " Part(s)";
+    document.getElementById('total-linear').innerText = totalLinear.toFixed(2) + " KM";
+    document.getElementById('total-estimation').innerText = totalEstimation.toFixed(2) + " KM";
+    document.getElementById('total-people').innerText = uniquePeople.size + " Allocated";
+    document.getElementById('total-completed').innerText = totalCompleted.toFixed(2) + " KM";
+    document.getElementById('total-pending').innerText = totalPending.toFixed(2) + " KM";
+    document.getElementById('total-time').innerText = totalTimeTaken.toFixed(2) + " Hrs";
+    document.getElementById('total-count').innerText = totalCountVal;
+
+    // --- Chart Layout Configurations ---
+    const employeeNames = Object.keys(personData);
+    const employeeCompleted = employeeNames.map(name => personData[name].completed.toFixed(2));
+    const employeePending = employeeNames.map(name => personData[name].pending.toFixed(2));
+
+    const ctx1 = document.getElementById('progressChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['Total Operations'],
+            datasets: [
+                { label: 'Completed KM', data: [totalCompleted.toFixed(2)], backgroundColor: '#10b981', borderRadius: 4 },
+                { label: 'Pending KM', data: [totalPending.toFixed(2)], backgroundColor: '#f59e0b', borderRadius: 4 }
+            ]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { x: { stacked: true }, y: { stacked: true } }
+        }
+    });
+
+    const ctx2 = document.getElementById('personChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: employeeNames,
+            datasets: [
+                { label: 'Completed KM', data: employeeCompleted, backgroundColor: '#3b82f6', borderRadius: 4 },
+                { label: 'Pending KM', data: employeePending, backgroundColor: '#ef4444', borderRadius: 4 }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { x: { stacked: true }, y: { stacked: true } }
+        }
+    });
+
+    // --- Added Dynamic Search Functionality ---
+    const searchInput = document.getElementById('tableSearch');
+    searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase().trim();
+        
+        rows.forEach(row => {
+            // Gathers text targets inside specific cells marked with '.searchable-field'
+            const cellsToSearch = row.querySelectorAll('.searchable-field');
+            let matchFound = false;
+
+            cellsToSearch.forEach(cell => {
+                if (cell.innerText.toLowerCase().includes(query)) {
+                    matchFound = true;
+                }
+            });
+
+            // Toggle visibility smoothly
+            if (matchFound || query === "") {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>
