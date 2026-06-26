@@ -1,69 +1,238 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Joint Workers Log Registry</title>
+    <title>Advanced Joint Workers Log Registry</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
+    <style id="dynamic-theme-styles">
         :root {
-            --primary: #1e293b;
-            --accent-green: #10b981;
-            --bg-main: #f1f5f9;
+            /* Default Base Fallbacks (Day Mode) */
+            --bg-main: #f8fafc;
             --card-bg: #ffffff;
-            --border: #e2e8f0;
+            --border: #cbd5e1;
             --text-main: #0f172a;
+            --text-muted: #64748b;
+            --header-bg: #1e293b;
+            --header-text: #f8fafc;
+            --parent-row-bg: #ffffff;
+            --child-row-bg: #f8fafc; 
+            --col-project-color: #3b82f6;
+            --global-font: 'Segoe UI', system-ui, sans-serif;
+            --text-weight: 500;
+            --metric-color: #334155;
+            --badge-bg: rgba(100, 116, 139, 0.1);
+            --row-hover: #f1f5f9;
+            --row-focus: #e0f2fe;
         }
+
         body {
             margin: 0;
             background-color: var(--bg-main);
-            font-family: 'Segoe UI', sans-serif;
+            font-family: var(--global-font);
             color: var(--text-main);
-            padding: 40px 24px;
+            padding: 30px 16px;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
+
+        .container { max-width: 1600px; margin: 0 auto; }
+        
         .header-block {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 16px;
             background: var(--card-bg);
-            padding: 20px 28px;
-            border-radius: 12px;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+            margin-bottom: 20px;
             border: 1px solid var(--border);
+        }
+
+        @media (min-width: 768px) {
+            .header-block {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        h1 { margin: 0; font-size: 1.6rem; color: var(--text-main); font-weight: 800; letter-spacing: -0.025em; }
+        
+        /* Stats Summary Cards Row */
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
             margin-bottom: 24px;
         }
-        h1 { margin: 0; font-size: 1.6rem; color: var(--primary); }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.02);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .stat-card .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700; }
+        .stat-card .val { font-size: 1.5rem; font-weight: 800; color: var(--text-main); }
+
+        /* Style Control Panel */
+        .style-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+        }
+        
+        .panel-section {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px dashed var(--border);
+        }
+        .panel-section:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .style-panel h3 { margin: 0 0 12px 0; font-size: 1rem; color: var(--text-main); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        .control-group-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+        }
+        
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1 1 200px;
+        }
+        
+        .control-item label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+        
+        .control-item input[type="color"] {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            width: 100%;
+            height: 40px;
+            cursor: pointer;
+            background: none;
+            padding: 2px;
+            box-sizing: border-box;
+        }
+        
+        .control-item select, .control-item input[type="text"], .btn-utility {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            height: 40px;
+            padding: 0 12px;
+            font-weight: 600;
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            font-size: 0.88rem;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+        .btn-utility {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-utility:hover {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            border-color: var(--header-bg);
+        }
+
         .btn-back {
             text-decoration: none;
             background: #475569;
             color: white;
-            padding: 10px 18px;
-            border-radius: 6px;
-            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-align: center;
         }
+        
+        /* Table Engine Layout */
         .table-responsive {
             background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05);
             overflow-x: auto;
+            border: 1px solid var(--border);
         }
+
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th {
-            background-color: #475569;
-            color: white;
-            padding: 14px 16px;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-        }
-        td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        tbody tr:nth-child(even) { background-color: #f8fafc; }
         
-        .worker-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 0.85rem;
+        th {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            padding: 16px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
         }
-        .original-badge { background: #e2e8f0; color: #475569; }
-        .joint-badge { background: #dbeafe; color: #1d4ed8; }
+        
+        td { padding: 16px; border-bottom: 1px solid var(--border); font-size: 0.92rem; vertical-align: middle; font-weight: var(--text-weight); }
+        
+        /* Row States Styles and Focus Effects */
+        .parent-row { background-color: var(--parent-row-bg); cursor: pointer; transition: background-color 0.15s; }
+        .child-row { background-color: var(--child-row-bg); cursor: pointer; transition: background-color 0.15s; }
+        .child-row td { border-bottom: 1px dashed var(--border); }
+        
+        tbody tr:hover { background-color: var(--row-hover) !important; }
+        tbody tr.focused-row { background-color: var(--row-focus) !important; }
+
+        /* Column Specific Layouts */
+        .col-id { font-weight: 800; text-align: center; color: var(--text-muted); }
+        .col-project { border-left: 5px solid var(--col-project-color); font-weight: 700; }
+        .col-part code { background: rgba(59, 130, 246, 0.1); color: var(--text-main); padding: 4px 8px; border-radius: 6px; font-weight: 700; font-family: monospace; border: 1px solid var(--border); }
+        .col-metrics { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--metric-color); }
+        .col-notes { font-style: italic; color: var(--text-muted); }
+
+        /* Badges Utilities */
+        .worker-badge {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            white-space: nowrap;
+        }
+        .original-badge { background: var(--badge-bg); color: var(--text-main); border: 1px solid var(--border); }
+        .joint-badge { background: rgba(37, 99, 235, 0.15); color: var(--text-main); border: 1px solid var(--col-project-color); }
+
+        .ditto-mark {
+            color: var(--text-muted);
+            font-weight: 900;
+            font-size: 1.1rem;
+            opacity: 0.5;
+        }
+
+        /* Action Handlers */
+        .actions-wrapper { display: flex; gap: 8px; }
+        .btn-action {
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.78rem;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.15s;
+        }
+        .btn-edit { background-color: #f59e0b; color: white; }
+        .btn-edit:hover { background-color: #d97706; }
+        .btn-delete { background-color: #ef4444; color: white; }
+        .btn-delete:hover { background-color: #dc2626; }
     </style>
 </head>
 <body>
@@ -74,13 +243,90 @@
         <a href="/index" class="btn-back">🔙 Back to Master Dashboard</a>
     </div>
 
+    <!-- Live Performance Metrics Summary Board -->
+    <div class="stats-strip">
+        <div class="stat-card">
+            <span class="label">Total System Log Lines</span>
+            <span class="val" id="stat-total-records">0</span>
+        </div>
+        <div class="stat-card">
+            <span class="label">Total Linear Pipeline (KM)</span>
+            <span class="val" id="stat-total-km">0 KM</span>
+        </div>
+        <div class="stat-card">
+            <span class="label">Sum Operational Time Spent</span>
+            <span class="val" id="stat-total-hours">0 Hrs</span>
+        </div>
+    </div>
+
+    <!-- Controls Panel Configuration Workspace -->
+    <div class="style-panel">
+        <div class="panel-section">
+            <h3>🔍 Smart Data Extraction & Themes</h3>
+            <div class="control-group-wrapper">
+                <div class="control-item" style="flex: 2 1 300px;">
+                    <label>Live Workspace Search Filter</label>
+                    <input type="text" id="tableSearchInput" placeholder="Type name, status, part code to filter down instantly..." onkeyup="filterWorkspaceTable()">
+                </div>
+                <button class="btn-utility" onclick="exportTableToCSV('joint-workers-registry.csv')">📥 Export Active View to CSV</button>
+                <button class="btn-utility" onclick="setDayMode()">☀️ Day</button>
+                <button class="btn-utility" onclick="setNightMode()">🌙 Night</button>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <h3>⚙️ Custom Style & Columns Merge Setup</h3>
+            <div class="control-group-wrapper">
+                <div class="control-item">
+                    <label>Header Background</label>
+                    <input type="color" id="headerBgPicker" value="#1e293b" oninput="updateTheme('--header-bg', this.value)">
+                </div>
+                <div class="control-item">
+                    <label>Unique Row Base</label>
+                    <input type="color" id="parentRowPicker" value="#ffffff" oninput="updateTheme('--parent-row-bg', this.value)">
+                </div>
+                <div class="control-item">
+                    <label>Joint Row (Repeat)</label>
+                    <input type="color" id="childRowPicker" value="#f8fafc" oninput="updateTheme('--child-row-bg', this.value)">
+                </div>
+                <div class="control-item">
+                    <label>Project Left Stripe</label>
+                    <input type="color" id="projectColPicker" value="#3b82f6" oninput="updateTheme('--col-project-color', this.value)">
+                </div>
+                <div class="control-item">
+                    <label>Font Family</label>
+                    <select id="fontSelector" onchange="updateTheme('--global-font', this.value)">
+                        <option value="'Segoe UI', system-ui, sans-serif">Segoe UI</option>
+                        <option value="'Arial', sans-serif">Arial Face</option>
+                        <option value="'Consolas', monospace">Technical Code Block</option>
+                    </select>
+                </div>
+                <div class="control-item">
+                    <label>Text Weight</label>
+                    <select id="weightSelector" onchange="updateTheme('--text-weight', this.value)">
+                        <option value="500">Medium Weight</option>
+                        <option value="700">Bold Slate</option>
+                        <option value="800">Solid Black</option>
+                    </select>
+                </div>
+                <div class="control-item">
+                    <label>Column Merging</label>
+                    <select id="mergeSelector" onchange="toggleColumnMerge(this.value)">
+                        <option value="show">Show Repeating Fields (Standard)</option>
+                        <option value="merge">Hide & Merge Repeating Identifiers</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="table-responsive">
-        <table>
+        <table id="registryMainTable">
             <thead>
                 <tr>
-                    <th>SN No</th>
-                    <th>Project Name</th>
-                    <th>Part No</th>
+                    <th class="merge-target" style="text-align: center; width: 60px;">SN No</th>
+                    <th class="merge-target">Project Name</th>
+                    <th class="merge-target">Part No</th>
                     <th>Linear KM</th>
                     <th>First Worker</th>
                     <th>➡️ Next Worker (Joined)</th>
@@ -90,45 +336,224 @@
                     <th>Count</th>
                     <th>Operation Status</th>
                     <th>Notes Logs</th>
+                    <th style="text-align: center; width: 160px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
+                {% set ns = namespace(last_part='') %}
+                {% set ns_count = namespace(sn=0) %}
+                
                 {% for row in records %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td style="font-weight: 600;">{{ row.bike_line }}</td>
-                    <td><code>{{ row.part_no }}</code></td>
-                    <td>{{ row.linear_km }}</td>
-                    
-                    <td>
-                        <span class="worker-badge original-badge">👤 {{ row.original_worker_name }}</span>
+                    {% if row.part_no != ns.last_part %}
+                        {% set is_new_part = true %}
+                        {% set ns.last_part = row.part_no %}
+                        {% set ns_count.sn = ns_count.sn + 1 %}
+                    {% else %}
+                        {% set is_new_part = false %}
+                    {% endif %}
+                
+                <tr class="{{ 'parent-row' if is_new_part else 'child-row' }}" onclick="highlightRowFocus(this)">
+                    <td class="col-id merge-target">
+                        {% if is_new_part %}
+                            {{ ns_count.sn }}
+                        {% else %}
+                            <span class="ditto-mark">""</span>
+                        {% endif %}
                     </td>
                     
-                    <td>
-                        <span class="worker-badge joint-badge">➕ {{ row.employee_name }}</span>
+                    <td class="col-project merge-target">
+                        {% if is_new_part %}
+                            {{ row.bike_line }}
+                        {% else %}
+                            <span class="ditto-mark">""</span>
+                        {% endif %}
                     </td>
                     
-                    <td>{{ row.completed_km }} KM</td>
-                    <td>{{ row.pending_km }} KM</td>
-                    <td>{{ row.time_taken }} hrs</td>
-                    <td>{{ row.count_val }}</td>
+                    <td class="col-part merge-target">
+                        {% if is_new_part %}
+                            <code>{{ row.part_no }}</code>
+                        {% else %}
+                            <span class="ditto-mark">""</span>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="col-metrics data-linear-km">{{ row.linear_km }}</td>
+                    <td><span class="worker-badge original-badge">👤 {{ row.original_worker_name }}</span></td>
+                    <td><span class="worker-badge joint-badge">➕ {{ row.employee_name }}</span></td>
+                    
+                    <td class="col-metrics data-completed-km" style="color: #059669;">{{ row.completed_km }}</td>
+                    <td class="col-metrics" style="color: #dc2626;">{{ row.pending_km }} KM</td>
+                    <td class="col-metrics data-time-taken" style="color: #2563eb;">{{ row.time_taken }}</td>
+                    <td class="col-metrics" style="font-weight: 800;">{{ row.count_val }}</td>
+                    
                     <td>
-                        <span style="font-weight:700; padding:4px 8px; border-radius:6px; font-size:0.75rem; background:#d1fae5; color:#059669;">
+                        <span style="font-weight:800; padding:6px 10px; border-radius:6px; font-size:0.72rem; background:rgba(16, 185, 129, 0.15); color:#059669; border: 1px solid #a7f3d0; text-transform: uppercase;">
                             {{ row.progress_status }}
                         </span>
                     </td>
-                    <td>{{ row.new_column_text or '-' }}</td>
+                    <td class="col-notes">{{ row.new_column_text or '-' }}</td>
+                    
+                    <td style="text-align: center;" onclick="event.stopPropagation();">
+                        <div class="actions-wrapper">
+                            <a href="/edit/{{ row.id }}" class="btn-action btn-edit">✏️ Edit</a>
+                            <a href="/delete/{{ row.id }}" class="btn-action btn-delete" onclick="return confirm('Are you sure you want to delete this joint record?');">🗑️ Delete</a>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
+                
                 {% if not records %}
-                <tr>
-                    <td colspan="12" style="text-align: center; color: #64748b; padding: 30px;">No auxiliary joint worker records have been submitted yet.</td>
+                <tr id="noDataFallbackRow">
+                    <td colspan="13" style="text-align: center; color: var(--text-muted); padding: 40px; font-weight: 600;">No auxiliary joint worker records have been submitted yet.</td>
                 </tr>
                 {% endif %}
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+    // Live CSS Custom Property Modifier Engine
+    function updateTheme(property, value) {
+        document.documentElement.style.setProperty(property, value);
+    }
+
+    // Interactive Row Focus Switcher
+    function highlightRowFocus(rowElement) {
+        const currentlyFocused = document.querySelector('.focused-row');
+        if (currentlyFocused) {
+            currentlyFocused.classList.remove('focused-row');
+        }
+        rowElement.classList.add('focused-row');
+    }
+
+    // Instant Client Side Filter Engine
+    function filterWorkspaceTable() {
+        const input = document.getElementById("tableSearchInput");
+        const filter = input.value.toUpperCase();
+        const table = document.getElementById("registryMainTable");
+        const tr = table.getElementsByTagName("tr");
+
+        for (let i = 1; i < tr.length; i++) {
+            if(tr[i].id === "noDataFallbackRow") continue;
+            let rowContainsQuery = false;
+            const tdElements = tr[i].getElementsByTagName("td");
+            
+            for (let j = 0; j < tdElements.length; j++) {
+                if (tdElements[j]) {
+                    const txtValue = tdElements[j].textContent || tdElements[j].innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        rowContainsQuery = true;
+                        break;
+                    }
+                }
+            }
+            tr[i].style.display = rowContainsQuery ? "" : "none";
+        }
+    }
+
+    // Dynamic Columns Merge 
+    function toggleColumnMerge(mode) {
+        const repeatCells = document.querySelectorAll('tbody tr.child-row .merge-target');
+        if (mode === 'merge') {
+            repeatCells.forEach(cell => {
+                cell.style.visibility = 'hidden'; 
+                cell.style.backgroundColor = 'transparent';
+                cell.style.border = 'none';
+            });
+        } else {
+            repeatCells.forEach(cell => {
+                cell.style.visibility = 'visible';
+                cell.style.backgroundColor = '';
+                cell.style.border = '';
+            });
+        }
+    }
+
+    // Dynamic Summary Aggregation Engine
+    function calculateLiveSummaryStats() {
+        const table = document.getElementById("registryMainTable");
+        const tr = table.querySelectorAll("tbody tr:not(#noDataFallbackRow)");
+        
+        let totalRecords = tr.length;
+        let totalKm = 0;
+        let totalHours = 0;
+
+        tr.forEach(row => {
+            const linearKmCell = row.querySelector('.data-linear-km');
+            const timeTakenCell = row.querySelector('.data-time-taken');
+
+            if (linearKmCell) totalKm += parseFloat(linearKmCell.textContent) || 0;
+            if (timeTakenCell) totalHours += parseFloat(timeTakenCell.textContent) || 0;
+        });
+
+        document.getElementById('stat-total-records').textContent = totalRecords;
+        document.getElementById('stat-total-km').textContent = totalKm.toFixed(2) + " KM";
+        document.getElementById('stat-total-hours').textContent = totalHours.toFixed(1) + " Hrs";
+    }
+
+    // Pure JavaScript Exporter
+    function exportTableToCSV(filename) {
+        let csv = [];
+        const rows = document.querySelectorAll("table tr");
+        
+        for (let i = 0; i < rows.length; i++) {
+            if (rows[i].style.display === "none") continue;
+            let row = [], cols = rows[i].querySelectorAll("td, th");
+            
+            for (let j = 0; j < cols.length - 1; j++) { // Exclude final Action column
+                let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").replace(/"/g, '""');
+                row.push('"' + data + '"');
+            }
+            csv.push(row.join(","));        
+        }
+        const csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
+        const downloadLink = document.createElement("a");
+        downloadLink.download = filename;
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+
+    function setDayMode() {
+        updateTheme('--bg-main', '#f8fafc');
+        updateTheme('--card-bg', '#ffffff');
+        updateTheme('--text-main', '#0f172a');
+        updateTheme('--border', '#cbd5e1');
+        updateTheme('--header-bg', '#1e293b');
+        updateTheme('--header-text', '#f8fafc');
+        updateTheme('--parent-row-bg', '#ffffff');
+        updateTheme('--child-row-bg', '#f8fafc');
+        updateTheme('--col-project-color', '#3b82f6');
+        updateTheme('--metric-color', '#334155');
+        updateTheme('--badge-bg', 'rgba(100, 116, 139, 0.1)');
+        updateTheme('--row-hover', '#f1f5f9');
+    }
+
+    function setNightMode() {
+        updateTheme('--bg-main', '#0f172a');
+        updateTheme('--card-bg', '#1e293b');
+        updateTheme('--text-main', '#f8fafc');
+        updateTheme('--border', '#475569');
+        updateTheme('--header-bg', '#334155');
+        updateTheme('--header-text', '#ffffff');
+        updateTheme('--parent-row-bg', '#1e293b');
+        updateTheme('--child-row-bg', '#182232');
+        updateTheme('--col-project-color', '#60a5fa');
+        updateTheme('--metric-color', '#e2e8f0');
+        updateTheme('--badge-bg', 'rgba(255, 255, 255, 0.1)');
+        updateTheme('--row-hover', '#24334d');
+    }
+
+    // Auto running layout initializes
+    window.onload = function() {
+        calculateLiveSummaryStats();
+        const currentHour = new Date().getHours();
+        if (currentHour < 6 || currentHour >= 18) { setNightMode(); } else { setDayMode(); }
+    };
+</script>
 
 </body>
 </html>

@@ -3,6 +3,30 @@
 <head>
     <title>Edit Record</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_Style.css') }}">
+    <style>
+        .meta-prev-info {
+            font-size: 0.72rem;
+            color: #64748b;
+            margin-top: 4px;
+            display: block;
+            font-style: italic;
+        }
+        /* Styling match for the formula view in image_f55a45.png */
+        .formula-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .formula-input:focus {
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+    </style>
 </head>
 <body>
 
@@ -15,7 +39,7 @@
         </div>
     </div>
     
-    <form method="POST">
+    <form method="POST" onsubmit="evaluateFormFormulas(event)">
         <div id="dynamic-fields-container">
             <div class="form-row-group">
                 <div class="form-group">
@@ -67,14 +91,18 @@
                     <input type="number" id="pending_km" step="0.01" name="pending_km" value="{{ record.pending_km or 0 }}" readonly style="background-color: #f3f4f6;">
                 </div>
 
+                <!-- Time Taken Formula Field -->
                 <div class="form-group">
                     <label for="time_taken">Time Taken</label>
-                    <input type="number" id="time_taken" step="0.01" name="time_taken" value="{{ record.time_taken or 0 }}">
+                    <input type="text" id="time_taken" name="time_taken" class="formula-input" value="{{ record.time_taken or 0 }}">
+                    <span class="meta-prev-info">Previous Logged: {{ record.time_taken or 0 }} Hrs</span>
                 </div>
 
+                <!-- Count Formula Field (Matching image_f55a45.png) -->
                 <div class="form-group">
-                    <label for="count_val">Count</label>
-                    <input type="number" id="count_val" name="count_val" value="{{ record.count_val or 0 }}">
+                    <label for="count_val">COUNT</label>
+                    <input type="text" id="count_val" name="count_val" class="formula-input" value="{{ record.count_val or 0 }}">
+                    <span class="meta-prev-info">Previous Logged Count: {{ record.count_val or 0 }}</span>
                 </div>
 
                 <div class="form-group">
@@ -86,7 +114,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="new_column_text">New Notes Column</label>
+                    <label for="new_column_text">New Notes COLUMN</label>
                     <input type="text" id="new_column_text" name="new_column_text" value="{{ record.new_column_text or '' }}" placeholder="Enter logs text...">
                 </div>
 
@@ -135,6 +163,28 @@ function calculatePendingKM() {
     const completedKM = parseFloat(document.getElementById('completed_km').value) || 0;
     const pendingKM = linearKM - completedKM;
     document.getElementById('pending_km').value = pendingKM >= 0 ? pendingKM.toFixed(2) : "0.00";
+}
+
+// Safely parses mathematical string inputs like "90+80" right before the form submits to the backend
+function evaluateFormFormulas(event) {
+    const fieldsToEvaluate = ['count_val', 'time_taken'];
+    
+    fieldsToEvaluate.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            let expr = input.value.trim();
+            // Sanitize expression to only allow digits, decimals, plus signs, and spaces
+            if (/^[\d.+\s-]+$/.test(expr)) {
+                try {
+                    // Evaluate math addition safely
+                    const calculatedValue = Function(`"use strict"; return (${expr})`)();
+                    input.value = calculatedValue;
+                } catch (e) {
+                    console.error("Invalid math expression in field: " + id);
+                }
+            }
+        }
+    });
 }
 
 function addNewFieldGroup() {

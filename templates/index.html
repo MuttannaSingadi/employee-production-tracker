@@ -285,6 +285,12 @@
             <span class="search-icon">🔍</span>
             <input type="text" id="tableSearch" class="search-input" placeholder="Search parameters...">
         </div>
+        <div class="action-button-group">
+            <a href="/" class="btn btn-home">🏠 Home Portal</a>
+            <a href="{{ url_for('joint_records') }}" class="btn btn-home">🔗 Join Records Analytics</a>
+            <a href="/delete_all" class="btn btn-delete" onclick="return confirm('CRITICAL: Are you absolutely sure?')">⚠️ Delete All</a>
+        </div>
+        
     </div>
 
     <div class="table-responsive">
@@ -360,7 +366,8 @@
 
                     <td><a href="/edit/{{ row.id }}" class="cell-action-link link-edit">✏️ Edit</a></td>
                     <td><a href="/delete/{{ row.id }}" class="cell-action-link link-delete" onclick="return confirm('Delete record?')">🗑️ Delete</a></td>
-                    <td><a href="/join/{{ row.id }}" class="cell-action-link" style="color: #10b981; font-weight: 600;">➕ Join</a></td>
+                    <td><a href="/join/{{ row.id }}" class="cell-action-link" style="color: #10b981; font-weight: 600;">➕ Join</a><a href="{{ url_for('joint_records') }}" class="portal-btn btn-secondary">🔗 Join Records Analytics</a></td>
+                    
                 </tr>
                 {% endfor %}
             </tbody>
