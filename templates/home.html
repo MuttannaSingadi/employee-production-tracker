@@ -79,10 +79,14 @@
     <p>Daily Tracking & Analytical Dashboard System</p>
     
     <div class="menu-links">
-        <a href="/index" class="portal-btn btn-primary">📋 Open Master Spreadsheet</a>
-        <a href="/add" class="portal-btn btn-secondary">➕ Log New Production Record</a>
-        <a href="/employee_report" class="portal-btn btn-secondary">👤 View Individual Employee Reports</a>
-    </div>
+    <a href="{{ url_for('index') }}" class="portal-btn btn-primary">📋 Open Master Spreadsheet</a>
+    
+    <a href="{{ url_for('add_record') }}" class="portal-btn btn-secondary">➕ Log New Production Record</a>
+    
+    <a href="{{ url_for('employee_report') }}" class="portal-btn btn-secondary">👤 View Individual Employee Reports</a>
+    
+    <a href="{{ url_for('joint_records') }}" class="portal-btn btn-secondary">🔗 Join Records Analytics</a>
+</div>
 </div>
 
 </body>
