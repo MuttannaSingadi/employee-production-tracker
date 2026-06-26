@@ -33,7 +33,6 @@
             padding: 0 24px;
         }
 
-        /* Dashboard Top Header Action Panel */
         .dashboard-header {
             display: flex;
             justify-content: space-between;
@@ -102,7 +101,6 @@
             border-color: var(--accent-red);
         }
 
-        /* Search Bar Component */
         .search-wrapper {
             background: var(--card-bg);
             padding: 16px 24px;
@@ -149,7 +147,6 @@
             pointer-events: none;
         }
 
-        /* Analytics Chart Layout Structure */
         .analytics-wrapper {
             display: flex;
             flex-wrap: wrap;
@@ -177,7 +174,6 @@
             padding-left: 10px;
         }
 
-        /* Modernized Data Table Spreadsheet Containers */
         .table-responsive {
             width: 100%;
             overflow-x: auto;
@@ -220,7 +216,6 @@
             background-color: #f1f5f9;
         }
 
-        /* Functional Text Formatting Components */
         .text-bold {
             font-weight: 600;
             color: var(--text-main);
@@ -233,23 +228,12 @@
             transition: color 0.2s ease;
         }
 
-        .link-edit {
-            color: var(--accent-blue);
-        }
-        .link-edit:hover {
-            color: var(--accent-blue-hover);
-            text-decoration: underline;
-        }
+        .link-edit { color: var(--accent-blue); }
+        .link-edit:hover { color: var(--accent-blue-hover); text-decoration: underline; }
 
-        .link-delete {
-            color: var(--accent-red);
-        }
-        .link-delete:hover {
-            color: var(--accent-red-hover);
-            text-decoration: underline;
-        }
+        .link-delete { color: var(--accent-red); }
+        .link-delete:hover { color: var(--accent-red-hover); text-decoration: underline; }
 
-        /* Embedded Status Indicators */
         .status-pill {
             font-weight: 700;
             padding: 4px 8px;
@@ -257,16 +241,9 @@
             font-size: 0.75rem;
             display: inline-block;
         }
-        .status-pill-comp {
-            background: #d1fae5;
-            color: #059669;
-        }
-        .status-pill-ip {
-            background: #fef3c7;
-            color: #d97706;
-        }
+        .status-pill-comp { background: #d1fae5; color: #059669; }
+        .status-pill-ip { background: #fef3c7; color: #d97706; }
 
-        /* Consolidated Aggregations Footer Grid Row */
         .summary-row {
             background-color: #e2e8f0 !important;
             font-weight: 700;
@@ -288,7 +265,7 @@
         <div class="action-button-group">
             <a href="/" class="btn btn-home">🏠 Home Portal</a>
             <a href="/add" class="btn btn-add">➕ Add New Record</a>
-            <a href="/delete_all" class="btn btn-delete" onclick="return confirm('CRITICAL: Are you absolutely sure you want to permanently purge all data rows from the database?')">⚠️ Delete All</a>
+            <a href="/delete_all" class="btn btn-delete" onclick="return confirm('CRITICAL: Are you absolutely sure?')">⚠️ Delete All</a>
         </div>
     </div>
 
@@ -297,7 +274,6 @@
             <h3>Overall Distance Progress Analysis</h3>
             <canvas id="progressChart" width="400" height="180"></canvas>
         </div>
-
         <div class="analytics-container">
             <h3>Progress Analysis By Alloted Person</h3>
             <canvas id="personChart" width="400" height="180"></canvas>
@@ -307,7 +283,7 @@
     <div class="search-wrapper">
         <div class="search-input-container">
             <span class="search-icon">🔍</span>
-            <input type="text" id="tableSearch" class="search-input" placeholder="Search by Bike Line, Part No, or Allocated Employee...">
+            <input type="text" id="tableSearch" class="search-input" placeholder="Search parameters...">
         </div>
     </div>
 
@@ -316,7 +292,7 @@
             <thead>
                 <tr>
                     <th>SN No</th>
-                    <th>Bike Line</th>
+                    <th>Project Name</th>
                     <th>Part No</th>
                     <th>Linear KM</th>
                     <th>Estimation</th>
@@ -328,9 +304,12 @@
                     <th>Time Taken</th>
                     <th>Count</th>
                     <th>Status</th>
+                    <th>Notes Logs</th>
+                    <th>Metric Val</th>
                     <th>Extra Metrics</th>
                     <th>Edit</th>
                     <th>Delete</th>
+                    <th>Join Worker</th>
                 </tr>
             </thead>
             <tbody>
@@ -348,7 +327,7 @@
                     <td class="searchable-field"><code>{{ row.part_no }}</code></td>
                     <td>{{ row.linear_km }}</td>
                     <td>{{ row.estimation }}</td>
-                    <td class="searchable-field">{{ row.employee_name if row.employee_name else '<span style="color: #94a3b8; font-style: italic;">Unassigned</span>'|safe }}</td>
+                    <td class="searchable-field">{{ row.employee_name if row.employee_name else 'Unassigned' }}</td>
                     <td>{{ row.start_date }}</td>
                     <td>{{ row.end_date }}</td>
                     <td>{{ row.completed_km }}</td>
@@ -361,6 +340,9 @@
                         </span>
                     </td>
                     
+                    <td>{{ row.new_column_text or '-' }}</td>
+                    <td>{{ row.new_column_numeric or '0' }}</td>
+
                     <td>
                         {% if row.extra_data %}
                             <div style="font-size: 0.8rem; line-height: 1.4;">
@@ -377,11 +359,11 @@
                     </td>
 
                     <td><a href="/edit/{{ row.id }}" class="cell-action-link link-edit">✏️ Edit</a></td>
-                    <td><a href="/delete/{{ row.id }}" class="cell-action-link link-delete" onclick="return confirm('Delete this record?')">🗑️ Delete</a></td>
+                    <td><a href="/delete/{{ row.id }}" class="cell-action-link link-delete" onclick="return confirm('Delete record?')">🗑️ Delete</a></td>
+                    <td><a href="/join/{{ row.id }}" class="cell-action-link" style="color: #10b981; font-weight: 600;">➕ Join</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
-
             <tfoot>
                 <tr class="summary-row">
                     <td>Sum</td>
@@ -400,6 +382,9 @@
                     <td>-</td>
                     <td>-</td>
                     <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
                 </tr>
             </tfoot>
         </table>
@@ -408,17 +393,8 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    let totalLinear = 0;
-    let totalEstimation = 0;
-    let totalCompleted = 0;
-    let totalPending = 0;
-    let totalTimeTaken = 0;
-    let totalCountVal = 0;
-
-    let partCount = 0;
-    let uniquePeople = new Set();
-    let uniqueBikeLines = new Set();
-    let personData = {};
+    let totalLinear = 0, totalEstimation = 0, totalCompleted = 0, totalPending = 0, totalTimeTaken = 0, totalCountVal = 0, partCount = 0;
+    let uniquePeople = new Set(), uniqueBikeLines = new Set(), personData = {};
 
     const rows = document.querySelectorAll('.record-row');
     rows.forEach(row => {
@@ -428,30 +404,17 @@ document.addEventListener("DOMContentLoaded", function() {
         const pending = parseFloat(row.getAttribute('data-pending')) || 0;
         const timeTaken = parseFloat(row.getAttribute('data-timetaken')) || 0;
         const countVal = parseInt(row.getAttribute('data-countval')) || 0;
-        
         const employee = row.getAttribute('data-employee').trim();
         const bikeLineCell = row.cells[1].innerText.trim();
 
-        totalLinear += linear;
-        totalEstimation += estimation;
-        totalCompleted += completed;
-        totalPending += pending;
-        totalTimeTaken += timeTaken;
-        totalCountVal += countVal;
-        
-        partCount++; 
+        totalLinear += linear; totalEstimation += estimation; totalCompleted += completed;
+        totalPending += pending; totalTimeTaken += timeTaken; totalCountVal += countVal; partCount++; 
 
-        if (employee && employee !== "Unassigned" && employee !== "") {
-            uniquePeople.add(employee);
-        }
-        if (bikeLineCell) {
-            uniqueBikeLines.add(bikeLineCell);
-        }
+        if (employee && employee !== "Unassigned") uniquePeople.add(employee);
+        if (bikeLineCell) uniqueBikeLines.add(bikeLineCell);
 
         let empKey = employee || "Unassigned";
-        if (!personData[empKey]) {
-            personData[empKey] = { completed: 0, pending: 0 };
-        }
+        if (!personData[empKey]) personData[empKey] = { completed: 0, pending: 0 };
         personData[empKey].completed += completed;
         personData[empKey].pending += pending;
     });
@@ -466,68 +429,41 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('total-time').innerText = totalTimeTaken.toFixed(2) + " Hrs";
     document.getElementById('total-count').innerText = totalCountVal;
 
-    // --- Chart Layout Configurations ---
     const employeeNames = Object.keys(personData);
     const employeeCompleted = employeeNames.map(name => personData[name].completed.toFixed(2));
     const employeePending = employeeNames.map(name => personData[name].pending.toFixed(2));
 
-    const ctx1 = document.getElementById('progressChart').getContext('2d');
-    new Chart(ctx1, {
+    new Chart(document.getElementById('progressChart').getContext('2d'), {
         type: 'bar',
         data: {
             labels: ['Total Operations'],
             datasets: [
-                { label: 'Completed KM', data: [totalCompleted.toFixed(2)], backgroundColor: '#10b981', borderRadius: 4 },
-                { label: 'Pending KM', data: [totalPending.toFixed(2)], backgroundColor: '#f59e0b', borderRadius: 4 }
+                { label: 'Completed KM', data: [totalCompleted.toFixed(2)], backgroundColor: '#10b981' },
+                { label: 'Pending KM', data: [totalPending.toFixed(2)], backgroundColor: '#f59e0b' }
             ]
         },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            plugins: { legend: { position: 'bottom' } },
-            scales: { x: { stacked: true }, y: { stacked: true } }
-        }
+        options: { indexAxis: 'y', responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { x: { stacked: true }, y: { stacked: true } } }
     });
 
-    const ctx2 = document.getElementById('personChart').getContext('2d');
-    new Chart(ctx2, {
+    new Chart(document.getElementById('personChart').getContext('2d'), {
         type: 'bar',
         data: {
             labels: employeeNames,
             datasets: [
-                { label: 'Completed KM', data: employeeCompleted, backgroundColor: '#3b82f6', borderRadius: 4 },
-                { label: 'Pending KM', data: employeePending, backgroundColor: '#ef4444', borderRadius: 4 }
+                { label: 'Completed KM', data: employeeCompleted, backgroundColor: '#3b82f6' },
+                { label: 'Pending KM', data: employeePending, backgroundColor: '#ef4444' }
             ]
         },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'bottom' } },
-            scales: { x: { stacked: true }, y: { stacked: true } }
-        }
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { x: { stacked: true }, y: { stacked: true } } }
     });
 
-    // --- Added Dynamic Search Functionality ---
-    const searchInput = document.getElementById('tableSearch');
-    searchInput.addEventListener('input', function(e) {
+    document.getElementById('tableSearch').addEventListener('input', function(e) {
         const query = e.target.value.toLowerCase().trim();
-        
         rows.forEach(row => {
-            // Gathers text targets inside specific cells marked with '.searchable-field'
-            const cellsToSearch = row.querySelectorAll('.searchable-field');
-            let matchFound = false;
-
-            cellsToSearch.forEach(cell => {
-                if (cell.innerText.toLowerCase().includes(query)) {
-                    matchFound = true;
-                }
-            });
-
-            // Toggle visibility smoothly
-            if (matchFound || query === "") {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
+            const cells = row.querySelectorAll('.searchable-field');
+            let match = false;
+            cells.forEach(c => { if (c.innerText.toLowerCase().includes(query)) match = true; });
+            row.style.display = (match || query === "") ? "" : "none";
         });
     });
 });

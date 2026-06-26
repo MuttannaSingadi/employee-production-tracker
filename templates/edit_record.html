@@ -8,7 +8,7 @@
 
 <div class="container">
     <div class="form-header">
-        <h2>Edit Record - {{ record.part_no }}</h2>
+        <h2>Edit Record (ID: {{ record.id }})</h2>
         <div class="action-buttons">
             <button type="button" class="ctrl-btn add-btn" onclick="addNewFieldGroup()">+ Add Section</button>
             <button type="button" class="ctrl-btn clear-btn" onclick="clearLastFieldGroup()">- Clear Last</button>
@@ -19,9 +19,8 @@
         <div id="dynamic-fields-container">
             <div class="form-row-group">
                 <div class="form-group">
-                    <label for="bike_line">Project Types</label>
+                    <label for="bike_line">Project Type</label>
                     <select id="bike_line" name="bike_line" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
-                        <option value="" disabled>Select Project Type</option>
                         <option value="Damage" {% if record.bike_line == 'Damage' %}selected{% endif %}>Damage</option>
                         <option value="Mohnl" {% if record.bike_line == 'Mohnl' %}selected{% endif %}>Mohnl</option>
                         <option value="Gally" {% if record.bike_line == 'Gally' %}selected{% endif %}>Gally</option>
@@ -29,56 +28,71 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Part Number (Read Only)</label>
+                    <input type="text" value="{{ record.part_no }}" readonly style="background-color: #f3f4f6; cursor: not-allowed;">
+                </div>
+
+                <div class="form-group">
                     <label for="linear_km">Linear KM</label>
-                    <input type="number" id="linear_km" step="0.01" name="linear_km" value="{{ '' if record.linear_km == 0 else record.linear_km }}" placeholder="Linear KM">
+                    <input type="number" id="linear_km" step="0.01" name="linear_km" value="{{ record.linear_km or 0 }}">
                 </div>
 
                 <div class="form-group">
                     <label for="estimation">Estimation</label>
-                    <input type="number" id="estimation" step="0.01" name="estimation" value="{{ '' if record.estimation == 0 else record.estimation }}" placeholder="Estimation">
+                    <input type="number" id="estimation" step="0.01" name="estimation" value="{{ record.estimation or 0 }}">
                 </div>
 
                 <div class="form-group">
                     <label for="employee_name">Alloted To</label>
-                    <input type="text" id="employee_name" name="employee_name" value="{{ record.employee_name }}" placeholder="Alloted To">
+                    <input type="text" id="employee_name" name="employee_name" value="{{ record.employee_name or '' }}" placeholder="Employee Name">
                 </div>
 
                 <div class="form-group">
                     <label for="start_date">Start Date</label>
-                    <input type="date" id="start_date" name="start_date" value="{{ record.start_date }}">
+                    <input type="date" id="start_date" name="start_date" value="{{ record.start_date or '' }}">
                 </div>
 
                 <div class="form-group">
                     <label for="end_date">End Date</label>
-                    <input type="date" id="end_date" name="end_date" value="{{ record.end_date }}">
+                    <input type="date" id="end_date" name="end_date" value="{{ record.end_date or '' }}">
                 </div>
 
                 <div class="form-group">
                     <label for="completed_km">Completed KM</label>
-                    <input type="number" id="completed_km" step="0.01" name="completed_km" value="{{ '' if record.completed_km == 0 else record.completed_km }}" placeholder="Completed KM">
+                    <input type="number" id="completed_km" step="0.01" name="completed_km" value="{{ record.completed_km or 0 }}">
                 </div>
 
                 <div class="form-group">
                     <label for="pending_km">Pending KM</label>
-                    <input type="number" id="pending_km" step="0.01" name="pending_km" value="{{ '' if record.pending_km == 0 else record.pending_km }}" placeholder="Pending KM" readonly style="background-color: #f3f4f6; cursor: not-allowed;">
+                    <input type="number" id="pending_km" step="0.01" name="pending_km" value="{{ record.pending_km or 0 }}" readonly style="background-color: #f3f4f6;">
                 </div>
 
                 <div class="form-group">
                     <label for="time_taken">Time Taken</label>
-                    <input type="number" id="time_taken" step="0.01" name="time_taken" value="{{ '' if record.time_taken == 0 else record.time_taken }}" placeholder="Time Taken">
+                    <input type="number" id="time_taken" step="0.01" name="time_taken" value="{{ record.time_taken or 0 }}">
                 </div>
 
                 <div class="form-group">
                     <label for="count_val">Count</label>
-                    <input type="number" id="count_val" name="count_val" value="{{ '' if record.count_val == 0 else record.count_val }}" placeholder="Count">
+                    <input type="number" id="count_val" name="count_val" value="{{ record.count_val or 0 }}">
                 </div>
 
-                <div class="form-group full-width">
+                <div class="form-group">
                     <label for="progress_status">Status</label>
                     <select id="progress_status" name="progress_status">
                         <option value="IP" {% if record.progress_status == 'IP' %}selected{% endif %}>IP</option>
                         <option value="COMP" {% if record.progress_status == 'COMP' %}selected{% endif %}>COMP</option>
                     </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="new_column_text">New Notes Column</label>
+                    <input type="text" id="new_column_text" name="new_column_text" value="{{ record.new_column_text or '' }}" placeholder="Enter logs text...">
+                </div>
+
+                <div class="form-group">
+                    <label for="new_column_numeric">New Value Column</label>
+                    <input type="number" id="new_column_numeric" step="0.01" name="new_column_numeric" value="{{ record.new_column_numeric or 0 }}">
                 </div>
             </div>
 
@@ -88,18 +102,21 @@
                     <hr class="group-divider">
                     <div class="form-group">
                         <label>Extra Metric Label</label>
-                        <input type="text" name="extra_metric_name[]" value="{{ key }}" placeholder="e.g. QC Status / Note">
+                        <input type="text" name="extra_metric_name[]" value="{{ key }}">
                     </div>
                     <div class="form-group">
                         <label>Extra Value</label>
-                        <input type="text" name="extra_metric_value[]" value="{{ val }}" placeholder="Value">
+                        <input type="text" name="extra_metric_value[]" value="{{ val }}">
                     </div>
                 </div>
                 {% endfor %}
             {% endif %}
         </div>
 
-        <button type="submit" class="submit-btn">Update Record</button>
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+            <button type="submit" class="submit-btn" style="flex: 1;">Update Changes</button>
+            <a href="/index" class="submit-btn" style="background-color: #64748b; text-decoration: none; text-align: center; line-height: 40px; height: 40px; padding: 0;">Cancel</a>
+        </div>
     </form>
 </div>
 
@@ -107,9 +124,7 @@
 document.addEventListener("DOMContentLoaded", function() {
     const linearInput = document.getElementById('linear_km');
     const completedInput = document.getElementById('completed_km');
-
     if (linearInput && completedInput) {
-        calculatePendingKM();
         linearInput.addEventListener('input', calculatePendingKM);
         completedInput.addEventListener('input', calculatePendingKM);
     }
@@ -130,7 +145,7 @@ function addNewFieldGroup() {
         <hr class="group-divider">
         <div class="form-group">
             <label>Extra Metric Label</label>
-            <input type="text" name="extra_metric_name[]" placeholder="e.g. QC Status / Note">
+            <input type="text" name="extra_metric_name[]" placeholder="e.g. QC Status">
         </div>
         <div class="form-group">
             <label>Extra Value</label>

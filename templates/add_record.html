@@ -30,22 +30,22 @@
 
                 <div class="form-group">
                     <label for="total_parts">Total Parts Loop Count</label>
-                    <input type="number" id="total_parts" name="total_parts" placeholder="Total Parts Loop Count" value="1">
+                    <input type="number" id="total_parts" name="total_parts" value="1">
                 </div>
 
                 <div class="form-group">
                     <label for="linear_km">Linear KM</label>
-                    <input type="number" id="linear_km" step="0.01" name="linear_km" placeholder="Linear KM" value="0">
+                    <input type="number" id="linear_km" step="0.01" name="linear_km" value="0">
                 </div>
 
                 <div class="form-group">
                     <label for="estimation">Estimation</label>
-                    <input type="number" id="estimation" step="0.01" name="estimation" placeholder="Estimation" value="0">
+                    <input type="number" id="estimation" step="0.01" name="estimation" value="0">
                 </div>
 
                 <div class="form-group">
                     <label for="employee_name">Alloted To</label>
-                    <input type="text" id="employee_name" name="employee_name" placeholder="Alloted To">
+                    <input type="text" id="employee_name" name="employee_name" placeholder="Employee Name">
                 </div>
 
                 <div class="form-group">
@@ -60,31 +60,40 @@
 
                 <div class="form-group">
                     <label for="completed_km">Completed KM</label>
-                    <input type="number" id="completed_km" step="0.01" name="completed_km" placeholder="Completed KM" value="0">
+                    <input type="number" id="completed_km" step="0.01" name="completed_km" value="0">
                 </div>
 
                 <div class="form-group">
                     <label for="pending_km">Pending KM</label>
-                    <input type="number" id="pending_km" step="0.01" name="pending_km" placeholder="Pending KM" readonly style="background-color: #f3f4f6; cursor: not-allowed;" value="0">
+                    <input type="number" id="pending_km" step="0.01" name="pending_km" readonly style="background-color: #f3f4f6;" value="0">
                 </div>
 
                 <div class="form-group">
                     <label for="time_taken">Time Taken</label>
-                    <input type="number" id="time_taken" step="0.01" name="time_taken" placeholder="Time Taken" value="0">
+                    <input type="number" id="time_taken" step="0.01" name="time_taken" value="0">
                 </div>
 
                 <div class="form-group">
                     <label for="count_val">Count</label>
-                    <input type="number" id="count_val" name="count_val" placeholder="Count" value="0">
+                    <input type="number" id="count_val" name="count_val" value="0">
                 </div>
 
-                <div class="form-group full-width">
+                <div class="form-group">
                     <label for="progress_status">Status</label>
                     <select id="progress_status" name="progress_status">
-                        <option value="">Select Status</option>
                         <option value="IP" selected>IP</option>
                         <option value="COMP">COMP</option>
                     </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="new_column_text">New Notes Column</label>
+                    <input type="text" id="new_column_text" name="new_column_text" placeholder="Enter logs text...">
+                </div>
+
+                <div class="form-group">
+                    <label for="new_column_numeric">New Value Column</label>
+                    <input type="number" id="new_column_numeric" step="0.01" name="new_column_numeric" value="0">
                 </div>
             </div>
         </div>
@@ -97,7 +106,6 @@
 document.addEventListener("DOMContentLoaded", function() {
     const linearInput = document.getElementById('linear_km');
     const completedInput = document.getElementById('completed_km');
-
     if (linearInput && completedInput) {
         linearInput.addEventListener('input', calculatePendingKM);
         completedInput.addEventListener('input', calculatePendingKM);
@@ -119,7 +127,7 @@ function addNewFieldGroup() {
         <hr class="group-divider">
         <div class="form-group">
             <label>Extra Metric Label</label>
-            <input type="text" name="extra_metric_name[]" placeholder="e.g. QC Status / Note">
+            <input type="text" name="extra_metric_name[]" placeholder="e.g. QC Status">
         </div>
         <div class="form-group">
             <label>Extra Value</label>

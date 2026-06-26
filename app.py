@@ -31,6 +31,10 @@ class DailyTracker(db.Model):
     count_val = db.Column(db.Integer)            
     progress_status = db.Column(db.String(20))    
     extra_data = db.Column(JSON, default=dict)
+    
+    # New columns structural properties
+    new_column_text = db.Column(db.String(200), default="")
+    new_column_numeric = db.Column(db.Float, default=0.0)
 
 @app.route('/')
 def home():
@@ -38,8 +42,44 @@ def home():
 
 @app.route('/index')
 def index():
+    # Fetch all records ordered chronologically by ID sequence
     db_records = DailyTracker.query.order_by(DailyTracker.id).all() 
-    return render_template('index.html', records=db_records)
+    
+    # Filter: Show ONLY the first person who worked on the unique part number on index page
+    seen_parts = set()
+    primary_records = []
+    
+    for record in db_records:
+        if record.part_no not in seen_parts:
+            primary_records.append(record)
+            seen_parts.add(record.part_no)
+            
+    return render_template('index.html', records=primary_records)
+
+@app.route("/joint_records")
+def joint_records():
+    # Fetch all records to build history relationships
+    db_records = DailyTracker.query.order_by(DailyTracker.id).all()
+    
+    # Step 1: Map the absolute first/original worker name for each Part Number
+    first_worker_map = {}
+    for record in db_records:
+        if record.part_no not in first_worker_map:
+            first_worker_map[record.part_no] = record.employee_name or 'Unassigned'
+            
+    # Step 2: Separate out subsequent joined rows and map their origin names
+    seen_parts = set()
+    joint_records_list = []
+    
+    for record in db_records:
+        if record.part_no in seen_parts:
+            # Attach the original worker name dynamically to this item object
+            record.original_worker_name = first_worker_map.get(record.part_no, 'Unassigned')
+            joint_records_list.append(record)
+        else:
+            seen_parts.add(record.part_no)
+            
+    return render_template("joint_records.html", records=joint_records_list)
 
 @app.route("/add", methods=["GET", "POST"])
 def add_record():
@@ -56,6 +96,10 @@ def add_record():
         time_taken = float(request.form.get("time_taken") or 0.0)
         count_val = int(request.form.get("count_val") or 0)
         progress_status = request.form.get("progress_status", "IP")
+        
+        # Capture newly targeted input rows
+        new_col_txt = request.form.get("new_column_text", "")
+        new_col_num = float(request.form.get("new_column_numeric") or 0.0)
         
         # Calculate pending field safely
         pending_km = linear_km - completed_km
@@ -90,7 +134,9 @@ def add_record():
                 time_taken=time_taken,
                 count_val=count_val,
                 progress_status=progress_status,
-                extra_data=processed_extra
+                extra_data=processed_extra,
+                new_column_text=new_col_txt,
+                new_column_numeric=new_col_num
             )
             db.session.add(record)
             
@@ -114,6 +160,10 @@ def edit_record(id):
         record.time_taken = float(request.form.get("time_taken") or 0.0)
         record.count_val = int(request.form.get("count_val") or 0)
         record.progress_status = request.form.get("progress_status", "IP")
+        
+        # Update values safely for editing
+        record.new_column_text = request.form.get("new_column_text", "")
+        record.new_column_numeric = float(request.form.get("new_column_numeric") or 0.0)
         
         # Calculate pending field safely on update
         pending_km = record.linear_km - record.completed_km
@@ -179,9 +229,48 @@ def delete_all():
     db.session.commit()
     return redirect("/index")
 
+@app.route("/join/<int:id>", methods=["GET", "POST"])
+def join_worker(id):
+    base_record = DailyTracker.query.get_or_404(id)
+    
+    if request.method == "POST":
+        new_worker = request.form.get("employee_name", "").strip()
+        completed_km = float(request.form.get("completed_km") or 0.0)
+        time_taken = float(request.form.get("time_taken") or 0.0)
+        count_val = int(request.form.get("count_val") or 0)
+        progress_status = request.form.get("progress_status", "IP")
+        new_col_txt = request.form.get("new_column_text", "")
+        new_col_num = float(request.form.get("new_column_numeric") or 0.0)
+        
+        pending_km = base_record.linear_km - completed_km
+        if pending_km < 0:
+            pending_km = 0.0
+            
+        joint_record = DailyTracker(
+            bike_line=base_record.bike_line,
+            part_no=base_record.part_no, 
+            linear_km=base_record.linear_km,
+            estimation=base_record.estimation,
+            employee_name=new_worker,
+            start_date=base_record.start_date, 
+            end_date=base_record.end_date,
+            completed_km=completed_km,
+            pending_km=pending_km,
+            time_taken=time_taken,
+            count_val=count_val,
+            progress_status=progress_status,
+            extra_data=base_record.extra_data, 
+            new_column_text=new_col_txt,
+            new_column_numeric=new_col_num
+        )
+        
+        db.session.add(joint_record)
+        db.session.commit()
+        return redirect("/index")
+        
+    return render_template("join_worker.html", base_record=base_record)
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()  
-        print("Database connection active. Persistent tracking storage configured successfully.")
-        
     app.run(debug=True)

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Join Worker to Part</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_Style.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <div class="form-header">
+        <h2>Join Additional Worker to Part</h2>
+        <p style="color: #64748b; margin-top: 4px;">Assigning a new worker to Part: <strong>{{ base_record.part_no }}</strong></p>
+    </div>
+    
+    <form method="POST">
+        <div class="form-row-group">
+            <div class="form-group">
+                <label>Project Type (Inherited)</label>
+                <input type="text" value="{{ base_record.bike_line }}" readonly style="background-color: #f1f5f9; color: #64748b; cursor: not-allowed;">
+            </div>
+
+            <div class="form-group">
+                <label>Part Number (Inherited)</label>
+                <input type="text" value="{{ base_record.part_no }}" readonly style="background-color: #f1f5f9; color: #64748b; cursor: not-allowed;">
+            </div>
+
+            <div class="form-group">
+                <label>Linear KM (Inherited)</label>
+                <input type="number" id="linear_km" value="{{ base_record.linear_km or 0 }}" readonly style="background-color: #f1f5f9; color: #64748b; cursor: not-allowed;">
+            </div>
+
+            <div class="form-group">
+                <label>Estimation Hours (Inherited)</label>
+                <input type="number" value="{{ base_record.estimation or 0 }}" readonly style="background-color: #f1f5f9; color: #64748b; cursor: not-allowed;">
+            </div>
+
+            <div class="form-group" style="border-left: 3px solid #2563eb; padding-left: 10px;">
+                <label for="employee_name" style="color: #2563eb; font-weight: 600;">New Joint Worker Name</label>
+                <input type="text" id="employee_name" name="employee_name" required placeholder="Enter new person name">
+            </div>
+
+            <div class="form-group">
+                <label for="completed_km">Completed KM (New Worker)</label>
+                <input type="number" id="completed_km" step="0.01" name="completed_km" value="0">
+            </div>
+
+            <div class="form-group">
+                <label for="pending_km">Calculated Pending KM</label>
+                <input type="number" id="pending_km" step="0.01" name="pending_km" value="0" readonly style="background-color: #f3f4f6;">
+            </div>
+
+            <div class="form-group">
+                <label for="time_taken">Time Taken by New Worker</label>
+                <input type="number" id="time_taken" step="0.01" name="time_taken" value="0">
+            </div>
+
+            <div class="form-group">
+                <label for="count_val">Count Component</label>
+                <input type="number" id="count_val" name="count_val" value="0">
+            </div>
+
+            <div class="form-group">
+                <label for="progress_status">Operation Status</label>
+                <select id="progress_status" name="progress_status">
+                    <option value="IP" selected>IP</option>
+                    <option value="COMP">COMP</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="new_column_text">Notes/Logs</label>
+                <input type="text" id="new_column_text" name="new_column_text" placeholder="Joint task notes...">
+            </div>
+
+            <div class="form-group">
+                <label for="new_column_numeric">Metric Value</label>
+                <input type="number" id="new_column_numeric" step="0.01" name="new_column_numeric" value="0">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 25px;">
+            <button type="submit" class="submit-btn" style="flex: 1; background-color: #2563eb;">Add Joint Entry</button>
+            <a href="/index" class="submit-btn" style="background-color: #64748b; text-decoration: none; text-align: center; line-height: 40px; height: 40px; padding: 0;">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const linearInput = document.getElementById('linear_km');
+    const completedInput = document.getElementById('completed_km');
+    
+    if (linearInput && completedInput) {
+        linearInput.addEventListener('input', calculatePendingKM);
+        completedInput.addEventListener('input', calculatePendingKM);
+        calculatePendingKM(); // Initialization execution
+    }
+});
+
+function calculatePendingKM() {
+    const linearKM = parseFloat(document.getElementById('linear_km').value) || 0;
+    const completedKM = parseFloat(document.getElementById('completed_km').value) || 0;
+    const pendingKM = linearKM - completedKM;
+    document.getElementById('pending_km').value = pendingKM >= 0 ? pendingKM.toFixed(2) : "0.00";
+}
+</script>
+</body>
+</html>
