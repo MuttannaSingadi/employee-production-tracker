@@ -36,6 +36,16 @@ class DailyTracker(db.Model):
     new_column_text = db.Column(db.String(200), default="")
     new_column_numeric = db.Column(db.Float, default=0.0)
 
+    # Added QC tracking metrics
+    qc_person = db.Column(db.String(100), default="")
+    qc_start_date = db.Column(db.String(20), default="")
+    qc_end_date = db.Column(db.String(20), default="")
+    qc_completed_km = db.Column(db.Float, default=0.0)
+    qc_pending_km = db.Column(db.Float, default=0.0)
+    qc_time_taken = db.Column(db.Float, default=0.0)
+    qc_extra_count = db.Column(db.Integer, default=0)
+    qc_status = db.Column(db.String(20), default="IP")
+
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -101,6 +111,16 @@ def add_record():
         new_col_txt = request.form.get("new_column_text", "")
         new_col_num = float(request.form.get("new_column_numeric") or 0.0)
         
+        # Capture newly targeted QC values
+        qc_person = request.form.get("qc_person", "")
+        qc_start_date = request.form.get("qc_start_date", "")
+        qc_end_date = request.form.get("qc_end_date", "")
+        qc_completed_km = float(request.form.get("qc_completed_km") or 0.0)
+        qc_pending_km = float(request.form.get("qc_pending_km") or 0.0)
+        qc_time_taken = float(request.form.get("qc_time_taken") or 0.0)
+        qc_extra_count = int(request.form.get("qc_extra_count") or 0)
+        qc_status = request.form.get("qc_status", "IP")
+        
         # Calculate pending field safely
         pending_km = linear_km - completed_km
         if pending_km < 0:
@@ -136,7 +156,15 @@ def add_record():
                 progress_status=progress_status,
                 extra_data=processed_extra,
                 new_column_text=new_col_txt,
-                new_column_numeric=new_col_num
+                new_column_numeric=new_col_num,
+                qc_person=qc_person,
+                qc_start_date=qc_start_date,
+                qc_end_date=qc_end_date,
+                qc_completed_km=qc_completed_km,
+                qc_pending_km=qc_pending_km,
+                qc_time_taken=qc_time_taken,
+                qc_extra_count=qc_extra_count,
+                qc_status=qc_status
             )
             db.session.add(record)
             
@@ -164,6 +192,16 @@ def edit_record(id):
         # Update values safely for editing
         record.new_column_text = request.form.get("new_column_text", "")
         record.new_column_numeric = float(request.form.get("new_column_numeric") or 0.0)
+        
+        # Update QC items values safely
+        record.qc_person = request.form.get("qc_person", "")
+        record.qc_start_date = request.form.get("qc_start_date", "")
+        record.qc_end_date = request.form.get("qc_end_date", "")
+        record.qc_completed_km = float(request.form.get("qc_completed_km") or 0.0)
+        record.qc_pending_km = float(request.form.get("qc_pending_km") or 0.0)
+        record.qc_time_taken = float(request.form.get("qc_time_taken") or 0.0)
+        record.qc_extra_count = int(request.form.get("qc_extra_count") or 0)
+        record.qc_status = request.form.get("qc_status", "IP")
         
         # Calculate pending field safely on update
         pending_km = record.linear_km - record.completed_km
@@ -261,7 +299,16 @@ def join_worker(id):
             progress_status=progress_status,
             extra_data=base_record.extra_data, 
             new_column_text=new_col_txt,
-            new_column_numeric=new_col_num
+            new_column_numeric=new_col_num,
+            # Carrying over database state default parameters for QC properties context safely
+            qc_person=base_record.qc_person,
+            qc_start_date=base_record.qc_start_date,
+            qc_end_date=base_record.qc_end_date,
+            qc_completed_km=base_record.qc_completed_km,
+            qc_pending_km=base_record.qc_pending_km,
+            qc_time_taken=base_record.qc_time_taken,
+            qc_extra_count=base_record.qc_extra_count,
+            qc_status=base_record.qc_status
         )
         
         db.session.add(joint_record)

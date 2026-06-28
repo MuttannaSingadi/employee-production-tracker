@@ -11,7 +11,6 @@
             display: block;
             font-style: italic;
         }
-        /* Styling match for the formula view in image_f55a45.png */
         .formula-input {
             width: 100%;
             padding: 8px;
@@ -25,6 +24,15 @@
             border-color: #2563eb;
             outline: none;
             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+        .qc-section-title {
+            grid-column: 1 / -1;
+            margin: 20px 0 10px 0;
+            padding-bottom: 6px;
+            border-bottom: 2px dashed #cbd5e1;
+            color: #1e293b;
+            font-size: 1.1rem;
+            font-weight: 700;
         }
     </style>
 </head>
@@ -98,7 +106,7 @@
                     <span class="meta-prev-info">Previous Logged: {{ record.time_taken or 0 }} Hrs</span>
                 </div>
 
-                <!-- Count Formula Field (Matching image_f55a45.png) -->
+                <!-- Count Formula Field -->
                 <div class="form-group">
                     <label for="count_val">COUNT</label>
                     <input type="text" id="count_val" name="count_val" class="formula-input" value="{{ record.count_val or 0 }}">
@@ -121,6 +129,53 @@
                 <div class="form-group">
                     <label for="new_column_numeric">New Value Column</label>
                     <input type="number" id="new_column_numeric" step="0.01" name="new_column_numeric" value="{{ record.new_column_numeric or 0 }}">
+                </div>
+
+                <!-- Dedicated Quality Control UI Input Subgroup -->
+                <div class="qc-section-title">🔍 Quality Control (QC) Tracking Metrics</div>
+
+                <div class="form-group">
+                    <label for="qc_person">QC Auditor</label>
+                    <input type="text" id="qc_person" name="qc_person" value="{{ record.qc_person or '' }}" placeholder="QC Person Name">
+                </div>
+
+                <div class="form-group">
+                    <label for="qc_start_date">QC Start Date</label>
+                    <input type="date" id="qc_start_date" name="qc_start_date" value="{{ record.qc_start_date or '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="qc_end_date">QC End Date</label>
+                    <input type="date" id="qc_end_date" name="qc_end_date" value="{{ record.qc_end_date or '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="qc_completed_km">QC Completed KM</label>
+                    <input type="number" id="qc_completed_km" step="0.01" name="qc_completed_km" value="{{ record.qc_completed_km or 0.0 }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="qc_pending_km">QC Pending KM</label>
+                    <input type="number" id="qc_pending_km" step="0.01" name="qc_pending_km" value="{{ record.qc_pending_km or 0.0 }}" readonly style="background-color: #f3f4f6;">
+                </div>
+
+                <div class="form-group">
+                    <label for="qc_time_taken">QC Time Taken</label>
+                    <input type="text" id="qc_time_taken" name="qc_time_taken" class="formula-input" value="{{ record.qc_time_taken or 0 }}">
+                    <span class="meta-prev-info">Previous Logged: {{ record.qc_time_taken or 0 }} Hrs</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="qc_extra_count">QC Quantity Count</label>
+                    <input type="number" id="qc_extra_count" name="qc_extra_count" value="{{ record.qc_extra_count or 0 }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="qc_status">QC Status</label>
+                    <select id="qc_status" name="qc_status">
+                        <option value="IP" {% if record.qc_status == 'IP' %}selected{% endif %}>IP</option>
+                        <option value="COMP" {% if record.qc_status == 'COMP' %}selected{% endif %}>COMP</option>
+                    </select>
                 </div>
             </div>
 
@@ -156,6 +211,13 @@ document.addEventListener("DOMContentLoaded", function() {
         linearInput.addEventListener('input', calculatePendingKM);
         completedInput.addEventListener('input', calculatePendingKM);
     }
+
+    // Interactive event triggers for the new QC metric calculation fields
+    const qcCompletedInput = document.getElementById('qc_completed_km');
+    if (linearInput && qcCompletedInput) {
+        linearInput.addEventListener('input', calculateQCPendingKM);
+        qcCompletedInput.addEventListener('input', calculateQCPendingKM);
+    }
 });
 
 function calculatePendingKM() {
@@ -165,18 +227,23 @@ function calculatePendingKM() {
     document.getElementById('pending_km').value = pendingKM >= 0 ? pendingKM.toFixed(2) : "0.00";
 }
 
-// Safely parses mathematical string inputs like "90+80" right before the form submits to the backend
+function calculateQCPendingKM() {
+    const linearKM = parseFloat(document.getElementById('linear_km').value) || 0;
+    const qcCompletedKM = parseFloat(document.getElementById('qc_completed_km').value) || 0;
+    const qcPendingKM = linearKM - qcCompletedKM;
+    document.getElementById('qc_pending_km').value = qcPendingKM >= 0 ? qcPendingKM.toFixed(2) : "0.00";
+}
+
 function evaluateFormFormulas(event) {
-    const fieldsToEvaluate = ['count_val', 'time_taken'];
+    // Included 'qc_time_taken' field calculation evaluator
+    const fieldsToEvaluate = ['count_val', 'time_taken', 'qc_time_taken'];
     
     fieldsToEvaluate.forEach(id => {
         const input = document.getElementById(id);
         if (input) {
             let expr = input.value.trim();
-            // Sanitize expression to only allow digits, decimals, plus signs, and spaces
             if (/^[\d.+\s-]+$/.test(expr)) {
                 try {
-                    // Evaluate math addition safely
                     const calculatedValue = Function(`"use strict"; return (${expr})`)();
                     input.value = calculatedValue;
                 } catch (e) {
@@ -195,7 +262,7 @@ function addNewFieldGroup() {
         <hr class="group-divider">
         <div class="form-group">
             <label>Extra Metric Label</label>
-            <input type="text" name="extra_metric_name[]" placeholder="e.g. QC Status">
+            <input type="text" name="extra_metric_name[]" placeholder="e.g. Deviation Notes">
         </div>
         <div class="form-group">
             <label>Extra Value</label>

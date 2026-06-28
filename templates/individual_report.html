@@ -1,126 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Employee Production Report</title>
-    <style>
-        :root {
-            --primary: #1e293b;
-            --bg: #f8fafc;
-            --border: #e2e8f0;
-            --text: #0f172a;
-        }
-        body {
-            background-color: var(--bg);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--text);
-            margin: 0;
-            padding: 40px 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .header-area {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: white;
-            padding: 20px 30px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            margin-bottom: 30px;
-        }
-        h1 { margin: 0; font-size: 1.6rem; color: var(--primary); }
-        .back-link {
-            text-decoration: none;
-            background: #475569;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        .date-section {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-        }
-        .date-title {
-            margin-top: 0;
-            font-size: 1.3rem;
-            color: #2563eb;
-            border-bottom: 2px solid #eff6ff;
-            padding-bottom: 8px;
-            margin-bottom: 20px;
-        }
-        .employee-block {
-            margin-bottom: 25px;
-            border: 1px dashed #cbd5e1;
-            padding: 16px;
-            border-radius: 8px;
-            background: #fbfcfe;
-        }
-        .employee-name {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #334155;
-            margin-bottom: 12px;
-        }
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        .metric-box {
-            background: white;
-            border: 1px solid var(--border);
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-        }
-        .metric-box span {
-            display: block;
-            font-size: 0.75rem;
-            color: #64748b;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-        .metric-box strong {
-            display: block;
-            font-size: 1.1rem;
-            color: var(--primary);
-            margin-top: 4px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            font-size: 0.85rem;
-        }
-        th {
-            background: #f1f5f9;
-            color: #475569;
-            text-align: left;
-            padding: 8px 12px;
-            border-bottom: 1px solid var(--border);
-        }
-        td {
-            padding: 8px 12px;
-            border-bottom: 1px solid var(--border);
-            color: #334155;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Production & QC Report</title>
+    <!-- Modern Font Family -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Linked Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/report.css', v='1.2') }}">
 </head>
 <body>
 
 <div class="container">
     <div class="header-area">
-        <h1>👤 Individual Employee Production Metrics</h1>
-        <a href="/index" class="back-link">🔙 Master Dashboard</a>
+        <h1>👤 Individual Employee Production & QC Metrics</h1>
+        <div class="header-actions">
+            <button id="toggleQcView" class="toggle-btn">🔍 Toggle QC Columns</button>
+            <a href="/index" class="back-link">🔙 Dashboard</a>
+        </div>
     </div>
 
     {% for date, employees in report_data.items() %}
@@ -128,48 +27,180 @@
         <h2 class="date-title">📅 Production Date: {{ date }}</h2>
         
         {% for emp_name, summary in employees.items() %}
-        <div class="employee-block">
-            <div class="employee-name">Worker: {{ emp_name }}</div>
+        
+        {# === UPDATED: ENGINE FOR BOTH PRODUCTION & QC COUNTS === #}
+        {% set totals = namespace(qc_checked=0.0, qc_pending=0.0, qc_time=0.0, qc_count=0, prod_count=0) %}
+        {% for record in summary.records %}
+            {# Production Count Summation #}
+            {% set current_prod_qty = record.count_val|int if record.count_val else 1 %}
+            {% set totals.prod_count = totals.prod_count + current_prod_qty %}
+
+            {# QC Calculations #}
+            {% set totals.qc_checked = totals.qc_checked + (record.qc_completed_km|float if record.qc_completed_km else 0.0) %}
+            {% set totals.qc_time = totals.qc_time + (record.qc_time_taken|float if record.qc_time_taken else 0.0) %}
             
-            <div class="metrics-grid">
-                <div class="metric-box"><span>Linear Total</span><strong>{{ "%.2f"|format(summary.total_linear) }} KM</strong></div>
-                <div class="metric-box"><span>Completed</span><strong>{{ "%.2f"|format(summary.total_completed) }} KM</strong></div>
-                <div class="metric-box"><span>Pending</span><strong>{{ "%.2f"|format(summary.total_pending) }} KM</strong></div>
-                <div class="metric-box"><span>Time Logged</span><strong>{{ "%.2f"|format(summary.total_time) }} Hrs</strong></div>
-                <div class="metric-box"><span>Total Count</span><strong>{{ summary.total_count }}</strong></div>
+            {# Pulls explicit QC extra count or defaults to 1 per record if QC person is assigned #}
+            {% set current_qc_qty = record.qc_extra_count|int if record.qc_extra_count else (1 if record.qc_person else 0) %}
+            {% set totals.qc_count = totals.qc_count + current_qc_qty %}
+            
+            {# Safely handle uppercase conversions for status metrics #}
+            {% set current_qc_status = (record.qc_status|string|upper|trim) if record.qc_status else '' %}
+            {% if current_qc_status != 'COMP' and current_qc_status != 'COMPLETED' %}
+                {% set totals.qc_pending = totals.qc_pending + ((record.linear_km|float if record.linear_km else 0.0) - (record.qc_completed_km|float if record.qc_completed_km else 0.0)) %}
+            {% endif %}
+        {% endfor %}
+        {# ============================================================= #}
+        
+        <div class="employee-block">
+            <div class="employee-meta-header">
+                <div class="employee-name">Worker: {{ emp_name }}</div>
+                <div class="qc-badge">Production & Auditing Summary</div>
+            </div>
+            
+            <!-- Dual Grid Layout: Production on Left, QC on Right -->
+            <div class="metrics-dashboard-grid">
+                <!-- Production Column Cluster -->
+                <div class="metrics-cluster prod-cluster">
+                    <h3>Production Totals</h3>
+                    <div class="metrics-subgrid">
+                        <div class="metric-box">
+                            <span>Linear Total</span>
+                            <strong>{{ "%.2f"|format(summary.total_linear or 0.0) }} KM</strong>
+                        </div>
+                        <div class="metric-box">
+                            <span>Completed</span>
+                            <strong>{{ "%.2f"|format(summary.total_completed or 0.0) }} KM</strong>
+                        </div>
+                        <div class="metric-box">
+                            <span>Pending</span>
+                            <strong>{{ "%.2f"|format(summary.total_pending or 0.0) }} KM</strong>
+                        </div>
+                        <div class="metric-box">
+                            <span>Time Logged</span>
+                            <strong>{{ "%.2f"|format(summary.total_time or 0.0) }} Hrs</strong>
+                        </div>
+                        <!-- NEWLY ADDED PRODUCTION ITEM COUNT BOX -->
+                        <div class="metric-box prod-count-highlight" style="border-left: 4px solid #0284c7;">
+                            <span>Prod Items Count</span>
+                            <strong>{{ totals.prod_count }} Pcs</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quality Control Column Cluster -->
+                <div class="metrics-cluster qc-cluster">
+                    <h3>Quality Control (As Auditor)</h3>
+                    <div class="metrics-subgrid">
+                        <div class="metric-box qc-highlight">
+                            <span>QC Checked</span>
+                            <strong>{{ "%.2f"|format(totals.qc_checked) }} KM</strong>
+                        </div>
+                        <div class="metric-box qc-highlight">
+                            <span>QC Remaining</span>
+                            <strong>{{ "%.2f"|format(totals.qc_pending if totals.qc_pending >= 0 else 0.0) }} KM</strong>
+                        </div>
+                        <div class="metric-box qc-highlight">
+                            <span>QC Time spent</span>
+                            <strong>{{ "%.2f"|format(totals.qc_time) }} Hrs</strong>
+                        </div>
+                        <div class="metric-box qc-highlight">
+                            <span>QC Items Count</span>
+                            <strong>{{ totals.qc_count }} Pcs</strong>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Part ID</th>
-                        <th>Project Line</th>
-                        <th>Status</th>
-                        <th>Notes Log</th>
-                        <th>Custom Metric Val</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for record in summary.records %}
-                    <tr>
-                        <td><code>{{ record.part_no }}</code></td>
-                        <td>{{ record.bike_line }}</td>
-                        <td><strong>{{ record.progress_status }}</strong></td>
-                        <td>{{ record.new_column_text or '-' }}</td>
-                        <td>{{ record.new_column_numeric or '0' }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <!-- Master Comprehensive Data Listing Table -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="prod-col">Part ID</th>
+                            <th class="prod-col">Project Line</th>
+                            <th class="prod-col">Linear KM</th>
+                            <th class="prod-col">Status</th>
+                            <th class="prod-col">Custom Value</th>
+                            <!-- Dedicated QC Target Dynamic Headers -->
+                            <th class="qc-col hidden-qc-col">QC Auditor</th>
+                            <th class="qc-col hidden-qc-col">QC Comp. KM</th>
+                            <th class="qc-col hidden-qc-col">QC Hours</th>
+                            <th class="qc-col hidden-qc-col">QC Status</th>
+                            <th class="prod-col">Notes Log</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in summary.records %}
+                        <tr>
+                            <td class="prod-col"><code>{{ record.part_no }}</code></td>
+                            <td class="prod-col">{{ record.bike_line }}</td>
+                            <td class="prod-col">{{ "%.2f"|format(record.linear_km or 0.0) }} KM</td>
+                            <td class="prod-col">
+                                <span class="badge {% if record.progress_status == 'COMP' %}badge-comp{% else %}badge-ip{% endif %}">
+                                    {{ record.progress_status }}
+                                </span>
+                            </td>
+                            <td class="prod-col">{{ record.new_column_numeric or '0' }}</td>
+                            
+                            <!-- QC Variables Row Injections -->
+                            <td class="qc-col hidden-qc-col auditor-name">{{ record.qc_person if record.qc_person else '-' }}</td>
+                            <td class="qc-col hidden-qc-col">{{ "%.2f"|format(record.qc_completed_km or 0.0) }} KM</td>
+                            <td class="qc-col hidden-qc-col">{{ record.qc_time_taken or '0' }} hrs</td>
+                            <td class="qc-col hidden-qc-col">
+                                <span class="badge {% if record.qc_status == 'COMP' %}badge-comp{% else %}badge-ip{% endif %}">
+                                    {{ record.qc_status or 'IP' }}
+                                </span>
+                            </td>
+
+                            <td class="prod-col notes-cell">{{ record.new_column_text or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div style="text-align: center; background: white; padding: 40px; border-radius: 12px; border: 1px solid var(--border);">
-        <p style="margin: 0; color: #64748b;">No items found to generate production report records.</p>
+    <div class="empty-state-card">
+        <p>No production or quality tracking records found for the requested criteria.</p>
     </div>
     {% endfor %}
 </div>
 
+<!-- Embedded Script Linkage -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    initializeQcColumnToggler();
+});
+
+function initializeQcColumnToggler() {
+    const toggleBtn = document.getElementById("toggleQcView");
+    if (!toggleBtn) return;
+
+    toggleBtn.addEventListener("click", function() {
+        const qcCells = document.querySelectorAll(".qc-col");
+        if (qcCells.length === 0) return;
+
+        const currentlyHidden = qcCells[0].classList.contains("hidden-qc-col");
+
+        qcCells.forEach(cell => {
+            if (currentlyHidden) {
+                cell.classList.remove("hidden-qc-col");
+            } else {
+                cell.classList.add("hidden-qc-col");
+            }
+        });
+
+        if (currentlyHidden) {
+            toggleBtn.textContent = "📋 Hide QC Columns";
+            toggleBtn.style.backgroundColor = "#64748b";
+        } else {
+            toggleBtn.textContent = "🔍 Show QC Columns";
+            toggleBtn.style.backgroundColor = "#0d9488";
+        }
+    });
+}
+</script>
 </body>
 </html>

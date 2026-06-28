@@ -1,93 +1,96 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>QGIS System Hub Portal</title>
-    <style>
-        :root {
-            --bg: #f8fafc;
-            --primary: #0f172a;
-            --accent: #2563eb;
-            --border: #e2e8f0;
-        }
-        body {
-            margin: 0;
-            background: var(--bg);
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-        .portal-card {
-            background: #ffffff;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 40px;
-            max-width: 500px;
-            width: 100%;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
-            text-align: center;
-        }
-        h1 {
-            margin: 0 0 10px 0;
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-        p {
-            color: #64748b;
-            margin: 0 0 30px 0;
-            font-size: 0.95rem;
-        }
-        .menu-links {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-        .portal-btn {
-            display: block;
-            text-decoration: none;
-            padding: 14px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.2s ease;
-            border: 1px solid var(--border);
-        }
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
-        .btn-primary:hover {
-            background: #1d4ed8;
-        }
-        .btn-secondary {
-            background: white;
-            color: #334155;
-        }
-        .btn-secondary:hover {
-            background: #f1f5f9;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoSpatial Production Hub</title>
+    <!-- Modern Font Imports -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Styled Theme Map Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css', v='1.2') }}">
 </head>
 <body>
 
-<div class="portal-card">
-    <h1>🗺️ GeoSpatial Production Portal</h1>
-    <p>Daily Tracking & Analytical Dashboard System</p>
+<!-- High-End Glassmorphic Navigation Bar -->
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="{{ url_for('index') }}" class="nav-brand">
+            <span class="brand-icon">🗺️</span>
+            <span class="brand-text">GeoHub <span class="brand-badge">PROD</span></span>
+        </a>
+        <div class="nav-links">
+            <a href="{{ url_for('index') }}" class="nav-item active">Spreadsheet</a>
+            <a href="{{ url_for('add_record') }}" class="nav-item">Log Record</a>
+            <a href="{{ url_for('employee_report') }}" class="nav-item">Employee Reports</a>
+            <a href="{{ url_for('joint_records') }}" class="nav-item">Analytics</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Dashboard Layout Content -->
+<main class="dashboard-container">
     
-    <div class="menu-links">
-    <a href="{{ url_for('index') }}" class="portal-btn btn-primary">📋 Open Master Spreadsheet</a>
-    
-    <a href="{{ url_for('add_record') }}" class="portal-btn btn-secondary">➕ Log New Production Record</a>
-    
-    <a href="{{ url_for('employee_report') }}" class="portal-btn btn-secondary">👤 View Individual Employee Reports</a>
-    
-    <a href="{{ url_for('joint_records') }}" class="portal-btn btn-secondary">🔗 Join Records Analytics</a>
-</div>
-</div>
+    <!-- Left Column: Hero Interactive Summary -->
+    <section class="hero-sidebar">
+        <div class="welcome-badge">🛰️ QGIS SYSTEM HUB PORTAL</div>
+        <h1>GeoSpatial<br>Production Portal</h1>
+        <p class="hero-subtitle">Daily Tracking, Mapping Performance & Production Engine Data Analytics.</p>
+        
+        <!-- Live status telemetry aesthetic elements -->
+        <div class="system-status">
+            <div class="status-indicator"></div>
+            <span>Production Environment Live & Secure</span>
+        </div>
+    </section>
+
+    <!-- Right Column: Interactive Menu Action Matrix -->
+    <section class="action-matrix">
+        <div class="matrix-grid">
+            
+            <!-- Primary Core Hub Action Card -->
+            <a href="{{ url_for('index') }}" class="matrix-card primary-hub-card">
+                <div class="card-glow"></div>
+                <div class="card-icon">📋</div>
+                <div class="card-body">
+                    <h3>Master Spreadsheet</h3>
+                    <p>Open database production logs, manage rows, check filters, and query raw data pipelines.</p>
+                </div>
+                <div class="card-action-arrow">→</div>
+            </a>
+
+            <!-- Log Action Card -->
+            <a href="{{ url_for('add_record') }}" class="matrix-card standard-card">
+                <div class="card-icon log-icon">➕</div>
+                <div class="card-body">
+                    <h3>Log Production</h3>
+                    <p>Register new parts processed, assign bike line metrics, and update linear progress logs.</p>
+                </div>
+            </a>
+
+            <!-- Reports Action Card -->
+            <a href="{{ url_for('employee_report') }}" class="matrix-card standard-card">
+                <div class="card-icon employee-icon">👤</div>
+                <div class="card-body">
+                    <h3>Employee Reports</h3>
+                    <p>Review worker completed totals, pending distances, and logged work hour efficiencies.</p>
+                </div>
+            </a>
+
+            <!-- Analytics Action Card -->
+            <a href="{{ url_for('joint_records') }}" class="matrix-card standard-card span-full-mobile">
+                <div class="card-icon analytics-icon">🔗</div>
+                <div class="card-body">
+                    <h3>Join Records Analytics</h3>
+                    <p>Run dynamic table relational configurations and identify production line constraints.</p>
+                </div>
+            </a>
+
+        </div>
+    </section>
+
+</main>
 
 </body>
 </html>
