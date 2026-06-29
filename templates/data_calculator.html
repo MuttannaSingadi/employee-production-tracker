@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Database Arithmetic Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+</head>
+<body class="container mt-4">
+    <div class="card shadow p-4 mb-4 bg-white rounded">
+        <h2 class="mb-4 text-primary">📊 Row-by-Row Column Arithmetic Calculator</h2>
+        
+        <!-- Formula Builder Interface Forms -->
+        <form method="POST" class="row g-3 align-items-end bg-light p-3 border rounded">
+            <div class="col-md-3">
+                <label class="form-label font-weight-bold">Select Base Variable</label>
+                <select name="left_col" class="form-select">
+                    <option value="linear_km" {% if left_col == 'linear_km' %}selected{% endif %}>Linear KM</option>
+                    <option value="completed_km" {% if left_col == 'completed_km' %}selected{% endif %}>Completed KM</option>
+                    <option value="pending_km" {% if left_col == 'pending_km' %}selected{% endif %}>Pending KM</option>
+                    <option value="time_taken" {% if left_col == 'time_taken' %}selected{% endif %}>Time Taken (Hours)</option>
+                    <option value="estimation" {% if left_col == 'estimation' %}selected{% endif %}>Estimation</option>
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Arithmetic Action</label>
+                <select name="operator" class="form-select text-center fw-bold text-danger">
+                    <option value="+" {% if operator == '+' %}selected{% endif %}>➕ Add (+)</option>
+                    <option value="-" {% if operator == '-' %}selected{% endif %}>➖ Subtract (-)</option>
+                    <option value="*" {% if operator == '*' %}selected{% endif %}>✖ Multiply (*)</option>
+                    <option value="/" {% if operator == '/' %}selected{% endif %}>➗ Divide (/)</option>
+                </select>
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">Select Second Variable</label>
+                <select name="right_col" class="form-select">
+                    <option value="completed_km" {% if right_col == 'completed_km' %}selected{% endif %}>Completed KM</option>
+                    <option value="linear_km" {% if right_col == 'linear_km' %}selected{% endif %}>Linear KM</option>
+                    <option value="pending_km" {% if right_col == 'pending_km' %}selected{% endif %}>Pending KM</option>
+                    <option value="time_taken" {% if right_col == 'time_taken' %}selected{% endif %}>Time Taken (Hours)</option>
+                    <option value="estimation" {% if right_col == 'estimation' %}selected{% endif %}>Estimation</option>
+                </select>
+            </div>
+            
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">Execute Calculation Formula</button>
+            </div>
+        </form>
+
+        <!-- Evaluation Presentation Matrix Table -->
+        <div class="table-responsive mt-4">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>ID</th>
+                        <th>Part Identifier</th>
+                        <th>Operand A ({{ left_col }})</th>
+                        <th>Op</th>
+                        <th>Operand B ({{ right_col }})</th>
+                        <th class="table-info text-dark">Calculated Evaluation Output</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results %}
+                    <tr class="text-center">
+                        <td>{{ row.id }}</td>
+                        <td class="fw-bold text-secondary">{{ row.part_no }}</td>
+                        <td>{{ row.val1 }}</td>
+                        <td class="text-danger fw-bold">{{ operator }}</td>
+                        <td>{{ row.val2 }}</td>
+                        <td class="table-info fw-bold text-primary">{{ row.result }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-3">
+            <a href="/index" class="btn btn-secondary">Return to Main Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>

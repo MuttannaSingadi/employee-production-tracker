@@ -3,145 +3,330 @@
 <head>
     <title>Add Record</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_Style.css') }}">
+    <!-- SheetJS library to parse Excel files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        .part-block {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .part-title {
+            font-weight: 700;
+            color: #1e293b;
+            margin-top: 0;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .counter-badge {
+            background: #2563eb;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+    </style>
 </head>
 <body>
 
 <div class="container">
     <div class="form-header">
-        <h2>Add New Record</h2>
+        <h2>Add New Records</h2>
         <div class="action-buttons">
             <button type="button" class="ctrl-btn add-btn" onclick="addNewFieldGroup()">+ Add Section</button>
             <button type="button" class="ctrl-btn clear-btn" onclick="clearLastFieldGroup()">- Clear Last</button>
         </div>
     </div>
     
+    <!-- Excel Dropzone / Upload -->
+    <div style="background: #f0fdf4; padding: 20px; margin-bottom: 25px; border: 2px dashed #16a34a; border-radius: 8px;">
+        <label for="autofill_file" style="font-weight: bold; color: #14532d; display: block; margin-bottom: 8px; font-size: 1.1rem;">
+            📊 Upload Excel Sheet (Auto-Generate All Parts):
+        </label>
+        <input type="file" id="autofill_file" accept=".xlsx, .xls, .csv" style="width: 100%; font-size: 1rem;">
+        <small style="color: #166534; margin-top: 6px; display: block;" id="upload-status-text">
+            Upload an Excel sheet to automatically read Part Numbers, Linear KM, Estimation, and dynamically map all rows.
+        </small>
+    </div>
+    
     <form method="POST">
+        <!-- Input elements are managed inside this container -->
         <div id="dynamic-fields-container">
-            <div class="form-row-group">
-                <div class="form-group">
-                    <label for="bike_line">Project Type</label>
-                    <select id="bike_line" name="bike_line" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
-                        <option value="" disabled selected>Select Project Type</option>
-                        <option value="Damage">Damage</option>
-                        <option value="Mohnl">Mohnl</option>
-                        <option value="Gally">Gally</option>
-                    </select>
+            <!-- Default First Record Row Form -->
+            <div class="part-block" id="part-block-0">
+                <div class="part-title">
+                    <span>Part Configuration</span>
+                    <span class="counter-badge">Row 1</span>
                 </div>
+                <div class="form-row-group">
+                    <div class="form-group">
+                        <label>Project Type</label>
+                        <select name="bike_line[]" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                            <option value="" disabled>Select Project Type</option>
+                            <option value="Damage" selected>Damage</option>
+                            <option value="Mohnl">Mohnl</option>
+                            <option value="Gally">Gally</option>
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label for="total_parts">Total Parts Loop Count</label>
-                    <input type="number" id="total_parts" name="total_parts" value="1">
-                </div>
+                    <div class="form-group">
+                        <label>Part Number / Identifier</label>
+                        <input type="text" name="part_no[]" placeholder="e.g. P-MAL-01">
+                    </div>
 
-                <div class="form-group">
-                    <label for="linear_km">Linear KM</label>
-                    <input type="number" id="linear_km" step="0.01" name="linear_km" value="0">
-                </div>
+                    <div class="form-group">
+                        <label>Linear KM</label>
+                        <input type="number" step="0.01" name="linear_km[]" class="lin-km-input" value="0" oninput="calculateRowPending(this)">
+                    </div>
 
-                <div class="form-group">
-                    <label for="estimation">Estimation</label>
-                    <input type="number" id="estimation" step="0.01" name="estimation" value="0">
-                </div>
+                    <div class="form-group">
+                        <label>Estimation</label>
+                        <input type="number" step="0.01" name="estimation[]" class="est-km-input" value="0">
+                    </div>
 
-                <div class="form-group">
-                    <label for="employee_name">Alloted To</label>
-                    <input type="text" id="employee_name" name="employee_name" placeholder="Employee Name">
-                </div>
+                    <div class="form-group">
+                        <label>Alloted To</label>
+                        <input type="text" name="employee_name[]" placeholder="Employee Name">
+                    </div>
 
-                <div class="form-group">
-                    <label for="start_date">Start Date</label>
-                    <input type="date" id="start_date" name="start_date">
-                </div>
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" name="start_date[]">
+                    </div>
 
-                <div class="form-group">
-                    <label for="end_date">End Date</label>
-                    <input type="date" id="end_date" name="end_date">
-                </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" name="end_date[]">
+                    </div>
 
-                <div class="form-group">
-                    <label for="completed_km">Completed KM</label>
-                    <input type="number" id="completed_km" step="0.01" name="completed_km" value="0">
-                </div>
+                    <div class="form-group">
+                        <label>Completed KM</label>
+                        <input type="number" step="0.01" name="completed_km[]" class="comp-km-input" value="0" oninput="calculateRowPending(this)">
+                    </div>
 
-                <div class="form-group">
-                    <label for="pending_km">Pending KM</label>
-                    <input type="number" id="pending_km" step="0.01" name="pending_km" readonly style="background-color: #f3f4f6;" value="0">
-                </div>
+                    <div class="form-group">
+                        <label>Pending KM</label>
+                        <input type="number" step="0.01" name="pending_km[]" class="pend-km-input" readonly style="background-color: #f3f4f6;" value="0">
+                    </div>
 
-                <div class="form-group">
-                    <label for="time_taken">Time Taken</label>
-                    <input type="number" id="time_taken" step="0.01" name="time_taken" value="0">
-                </div>
+                    <div class="form-group">
+                        <label>Time Taken</label>
+                        <input type="number" step="0.01" name="time_taken[]" value="0">
+                    </div>
 
-                <div class="form-group">
-                    <label for="count_val">Count</label>
-                    <input type="number" id="count_val" name="count_val" value="0">
-                </div>
+                    <div class="form-group">
+                        <label>Count</label>
+                        <input type="number" name="count_val[]" value="0">
+                    </div>
 
-                <div class="form-group">
-                    <label for="progress_status">Status</label>
-                    <select id="progress_status" name="progress_status">
-                        <option value="IP" selected>IP</option>
-                        <option value="COMP">COMP</option>
-                    </select>
-                </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select name="progress_status[]">
+                            <option value="IP" selected>IP</option>
+                            <option value="COMP">COMP</option>
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label for="new_column_text">New Notes Column</label>
-                    <input type="text" id="new_column_text" name="new_column_text" placeholder="Enter logs text...">
-                </div>
+                    <div class="form-group">
+                        <label>New Notes Column</label>
+                        <input type="text" name="new_column_text[]" placeholder="Enter logs text...">
+                    </div>
 
-                <div class="form-group">
-                    <label for="new_column_numeric">New Value Column</label>
-                    <input type="number" id="new_column_numeric" step="0.01" name="new_column_numeric" value="0">
+                    <div class="form-group">
+                        <label>New Value Column</label>
+                        <input type="number" step="0.01" name="new_column_numeric[]" value="0">
+                    </div>
                 </div>
             </div>
         </div>
 
-        <button type="submit" class="submit-btn">Save New Record</button>
+        <!-- This hidden input tracks total parsed row loops for backend awareness -->
+        <input type="hidden" id="total_parts" name="total_parts" value="1">
+
+        <button type="submit" class="submit-btn" style="background: #16a34a; margin-top: 10px;">Save All Generated Records</button>
     </form>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    const linearInput = document.getElementById('linear_km');
-    const completedInput = document.getElementById('completed_km');
-    if (linearInput && completedInput) {
-        linearInput.addEventListener('input', calculatePendingKM);
-        completedInput.addEventListener('input', calculatePendingKM);
+    const fileInput = document.getElementById('autofill_file');
+    if (fileInput) {
+        fileInput.addEventListener('change', handleExcelProcessing);
     }
 });
 
-function calculatePendingKM() {
-    const linearKM = parseFloat(document.getElementById('linear_km').value) || 0;
-    const completedKM = parseFloat(document.getElementById('completed_km').value) || 0;
+// Primary math calculation function mapped directly per form item row block
+function calculateRowPending(element) {
+    const parentBlock = element.closest('.part-block');
+    const linearKM = parseFloat(parentBlock.querySelector('.lin-km-input').value) || 0;
+    const completedKM = parseFloat(parentBlock.querySelector('.comp-km-input').value) || 0;
+    const pendingField = parentBlock.querySelector('.pend-km-input');
+    
     const pendingKM = linearKM - completedKM;
-    document.getElementById('pending_km').value = pendingKM >= 0 ? pendingKM.toFixed(2) : "0.00";
+    pendingField.value = pendingKM >= 0 ? pendingKM.toFixed(2) : "0.00";
 }
 
+// Function that parses data matrix rows dynamically inside browser memory
+function handleExcelProcessing(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        
+        if (jsonData.length === 0) {
+            alert('The Excel file is empty.');
+            return;
+        }
+
+        // Clean out default template input containers before rendering dynamic sets
+        const container = document.getElementById('dynamic-fields-container');
+        container.innerHTML = '';
+
+        // Auto find fuzzy matching variations of header keys
+        const headers = Object.keys(jsonData[0]);
+        const partKey = headers.find(h => h.toLowerCase().includes('part') || h.toLowerCase().includes('pn') || h.toLowerCase().includes('id'));
+        const linearKey = headers.find(h => h.toLowerCase().includes('linear') || h.toLowerCase().includes('lin'));
+        const estimKey = headers.find(h => h.toLowerCase().includes('estim'));
+        const workerKey = headers.find(h => h.toLowerCase().includes('allot') || h.toLowerCase().includes('name') || h.toLowerCase().includes('worker') || h.toLowerCase().includes('employee'));
+
+        // Loop and build a matching form component structure block for every Excel data row
+        jsonData.forEach((row, index) => {
+            const partValue = partKey && row[partKey] !== undefined ? row[partKey] : `P-AUTO-${String(index+1).padStart(2, '0')}`;
+            const linearValue = linearKey && row[linearKey] !== undefined ? parseFloat(row[linearKey]) : 0;
+            const estimValue = estimKey && row[estimKey] !== undefined ? parseFloat(row[estimKey]) : 0;
+            const workerValue = workerKey && row[workerKey] !== undefined ? row[workerKey] : '';
+
+            const rowBlock = document.createElement('div');
+            rowBlock.className = 'part-block';
+            rowBlock.id = `part-block-${index}`;
+            
+            rowBlock.innerHTML = `
+                <div class="part-title">
+                    <span>Parsed Record Data Matrix</span>
+                    <span class="counter-badge" style="background:#16a34a;">Part Row ${index + 1}</span>
+                </div>
+                <div class="form-row-group">
+                    <div class="form-group">
+                        <label>Project Type</label>
+                        <select name="bike_line[]" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                            <option value="Damage" selected>Damage</option>
+                            <option value="Mohnl">Mohnl</option>
+                            <option value="Gally">Gally</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Part Number / Identifier</label>
+                        <input type="text" name="part_no[]" value="${partValue}">
+                    </div>
+                    <div class="form-group">
+                        <label>Linear KM</label>
+                        <input type="number" step="0.01" name="linear_km[]" class="lin-km-input" value="${linearValue}" oninput="calculateRowPending(this)">
+                    </div>
+                    <div class="form-group">
+                        <label>Estimation</label>
+                        <input type="number" step="0.01" name="estimation[]" class="est-km-input" value="${estimValue}">
+                    </div>
+                    <div class="form-group">
+                        <label>Alloted To</label>
+                        <input type="text" name="employee_name[]" value="${workerValue}" placeholder="Employee Name">
+                    </div>
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" name="start_date[]">
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" name="end_date[]">
+                    </div>
+                    <div class="form-group">
+                        <label>Completed KM</label>
+                        <input type="number" step="0.01" name="completed_km[]" class="comp-km-input" value="0" oninput="calculateRowPending(this)">
+                    </div>
+                    <div class="form-group">
+                        <label>Pending KM</label>
+                        <input type="number" step="0.01" name="pending_km[]" class="pend-km-input" value="${linearValue.toFixed(2)}" readonly style="background-color: #f3f4f6;">
+                    </div>
+                    <div class="form-group">
+                        <label>Time Taken</label>
+                        <input type="number" step="0.01" name="time_taken[]" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Count</label>
+                        <input type="number" name="count_val[]" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select name="progress_status[]">
+                            <option value="IP" selected>IP</option>
+                            <option value="COMP">COMP</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>New Notes Column</label>
+                        <input type="text" name="new_column_text[]" placeholder="Enter logs text...">
+                    </div>
+                    <div class="form-group">
+                        <label>New Value Column</label>
+                        <input type="number" step="0.01" name="new_column_numeric[]" value="0">
+                    </div>
+                </div>
+            `;
+            container.appendChild(rowBlock);
+        });
+
+        // Set total count variable state
+        document.getElementById('total_parts').value = jsonData.length;
+        document.getElementById('upload-status-text').innerHTML = `🎉 Successfully scanned <b>${jsonData.length} rows</b> from Excel! Review the populated parts below.`;
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+// Keep manual addition capability active
 function addNewFieldGroup() {
     const container = document.getElementById('dynamic-fields-container');
+    const index = container.getElementsByClassName('part-block').length;
     const newGroup = document.createElement('div');
-    newGroup.className = 'form-row-group extra-group';
+    newGroup.className = 'part-block extra-group';
+    newGroup.id = `part-block-${index}`;
     newGroup.innerHTML = `
-        <hr class="group-divider">
-        <div class="form-group">
-            <label>Extra Metric Label</label>
-            <input type="text" name="extra_metric_name[]" placeholder="e.g. QC Status">
+        <div class="part-title">
+            <span>Manually Appended Row</span>
+            <span class="counter-badge" style="background:#2563eb;">Custom Item</span>
         </div>
-        <div class="form-group">
-            <label>Extra Value</label>
-            <input type="text" name="extra_metric_value[]" placeholder="Value">
+        <div class="form-row-group">
+            <div class="form-group">
+                <label>Extra Metric Label</label>
+                <input type="text" name="extra_metric_name[]" placeholder="e.g. QC Status">
+            </div>
+            <div class="form-group">
+                <label>Extra Value</label>
+                <input type="text" name="extra_metric_value[]" placeholder="Value">
+            </div>
         </div>
     `;
     container.appendChild(newGroup);
+    document.getElementById('total_parts').value = index + 1;
 }
 
 function clearLastFieldGroup() {
     const container = document.getElementById('dynamic-fields-container');
-    const extraGroups = container.getElementsByClassName('extra-group');
-    if (extraGroups.length > 0) {
-        container.removeChild(extraGroups[extraGroups.length - 1]);
+    const blocks = container.getElementsByClassName('part-block');
+    if (blocks.length > 0) {
+        container.removeChild(blocks[blocks.length - 1]);
+        document.getElementById('total_parts').value = blocks.length;
     }
 }
 </script>

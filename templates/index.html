@@ -12,8 +12,177 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css', v='1.2') }}">
     <!-- Chart.js Core CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Embedded Navbar & Calculator Styles (Keeps index.css pristine) -->
+    <style>
+        /* Modern Navbar Styles */
+        .main-navbar {
+            background-color: #0f172a;
+            border-bottom: 1px solid #1e293b;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav-brand {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            color: #38bdf8;
+        }
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .nav-toggle {
+                display: block;
+            }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: #0f172a;
+                border-bottom: 1px solid #1e293b;
+                padding: 1rem 0;
+                gap: 1rem;
+                box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+            }
+            .nav-links.show {
+                display: flex;
+            }
+        }
+
+        /* Calculator Specific Layout Styles */
+        .calc-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .calc-wrapper {
+            background: #1e293b;
+            border-radius: 16px;
+            width: 340px;
+            padding: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+            border: 1px solid #334155;
+        }
+        .calc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #f8fafc;
+            font-weight: 700;
+        }
+        .calc-close-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .calc-close-btn:hover { color: #f1f5f9; }
+        .calc-screen {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: right;
+            margin-bottom: 15px;
+            border: 1px solid #334155;
+        }
+        .calc-history {
+            color: #64748b;
+            font-size: 0.85rem;
+            min-height: 20px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        .calc-output {
+            color: #ffffff;
+            font-size: 2rem;
+            font-weight: bold;
+            font-family: monospace;
+            overflow: hidden;
+        }
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .calc-btn {
+            padding: 15px 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .btn-num { background: #334155; color: #f8fafc; }
+        .btn-num:hover { background: #475569; }
+        .btn-op { background: #475569; color: #38bdf8; }
+        .btn-op:hover { background: #64748b; }
+        .btn-clear { background: #ef4444; color: #ffffff; }
+        .btn-clear:hover { background: #f87171; }
+        .btn-eq { background: #10b981; color: #ffffff; grid-column: span 1; }
+        .btn-eq:hover { background: #34d399; }
+    </style>
 </head>
 <body>
+
+<!-- Modern Main Responsive Navigation Bar -->
+<nav class="main-navbar">
+    <a href="/" class="nav-brand">🗺️ QGIS GeoHub</a>
+    <button class="nav-toggle" onclick="toggleNavbarMenu()">☰</button>
+    <ul class="nav-links" id="navbarLinks">
+        <li><a href="/" class="active">Dashboard</a></li>
+        <li><a href="{{ url_for('joint_records') }}">Joint Analytics</a></li>
+        <li><a href="{{ url_for('calculate_metrics') }}">System Calculations</a></li>
+        <li><a href="#" onclick="toggleCalcModal(true); return false;">Scratchpad</a></li>
+    </ul>
+</nav>
 
 <div class="container" id="dashboardContainer">
 
@@ -79,6 +248,24 @@
         </div>
     </section>
 
+    <!-- Auto-Match Upload Utility Section -->
+    <section class="upload-utility-wrapper" style="margin: 20px 0; padding: 15px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px;">
+        <form action="/upload_report" method="POST" enctype="multipart/form-data" style="display: flex; align-items: center; gap: 15px;">
+            <span style="font-weight: 600; font-size: 0.95rem; color: #334155;">📁 Auto-Match Document:</span>
+            <input type="file" name="file" accept=".pdf, .xlsx, .xls" required style="font-size: 0.9rem; color: #475569;">
+            <button type="submit" class="btn btn-add" style="background-color: #2563eb; padding: 6px 16px;">⚡ Parse & Sync</button>
+
+            <a href="{{ url_for('calculate_metrics') }}" class="btn btn-info">
+                <i class="fas fa-calculator"></i> Run System Calculations
+            </a>
+        </form>
+        
+        <!-- Modified Button Action to Trigger Popup Pocket Calculator Model Interface -->
+        <button type="button" class="btn btn-warning text-dark fw-bold" onclick="toggleCalcModal(true)" style="margin-top: 10px; display: inline-flex; align-items: center; cursor: pointer; border: none; font-family: inherit;">
+            🧮 Open Pocket Calculator
+        </button>
+    </section>
+
     <!-- Scrollable Responsive Data Table Frame -->
     <div class="table-responsive">
         <table>
@@ -113,7 +300,6 @@
             </thead>
             <tbody>
                 {% for row in records %}
-                <!-- FIX 1: Appended rich data attributes for internal JS calculation loops -->
                 <tr class="record-row text-row-item" 
                     data-linear="{{ row.linear_km or 0 }}" 
                     data-estimation="{{ row.estimation or 0 }}"
@@ -186,7 +372,6 @@
                 {% endfor %}
             </tbody>
             <tfoot>
-                <!-- FIX 2: Normalized cell count to 24 exact nodes to match the layout grid structure -->
                 <tr class="summary-row">
                     <td>Sum</td>
                     <td id="total-bike-lines">-</td>
@@ -203,11 +388,12 @@
                     <td>-</td>
                     <td>-</td>
                     <td>-</td>
-                    <!-- Target dynamic IDs for script-driven calculations -->
                     <td id="total-qc-auditors">-</td>
                     <td>-</td>
                     <td id="total-qc-completed">0.00</td>
                     <td id="total-qc-time">0.00</td>
+                    <td>-</td>
+                    <td>-</td>
                     <td>-</td>
                     <td>-</td>
                     <td>-</td>
@@ -219,7 +405,51 @@
     </div>
 </div>
 
+<!-- Modal Pocket Calculator Overlay Sandbox Window Container -->
+<div class="calc-modal-overlay" id="calculatorModal" onclick="if(event.target === this) toggleCalcModal(false)">
+    <div class="calc-wrapper">
+        <div class="calc-header">
+            <span>🧮 Calculator Scratchpad</span>
+            <button type="button" class="calc-close-btn" onclick="toggleCalcModal(false)">&times;</button>
+        </div>
+        <div class="calc-screen">
+            <div id="calcHistory" class="calc-history"></div>
+            <div id="calcDisplay" class="calc-output">0</div>
+        </div>
+        <div class="calc-grid">
+            <button type="button" class="calc-btn btn-clear" onclick="clearCalculator()">C</button>
+            <button type="button" class="calc-btn btn-op" onclick="appendOperator('/')">÷</button>
+            <button type="button" class="calc-btn btn-op" onclick="appendOperator('*')">×</button>
+            <button type="button" class="calc-btn btn-op" onclick="backspaceCalculator()">⌫</button>
+
+            <button type="button" class="calc-btn btn-num" onclick="appendNumber('7')">7</button>
+            <button type="button" class="calc-btn btn-num" onclick="appendNumber('8')">8</button>
+            <button type="button" class="calc-btn btn-num" onclick="appendNumber('9')">9</button>
+            <button type="button" class="calc-btn btn-op" onclick="appendOperator('-')">−</button>
+
+            <button type="button" class="calc-btn btn-num" onclick="appendNumber('4')">4</button>
+            <button type="button" class="calc-btn btn-num" onclick="appendNumber('5')">5</button>
+            <button type="button" class="calc-btn btn-num" onclick="appendNumber('6')">6</button>
+            <button type="button" class="calc-btn btn-op" onclick="appendOperator('+')">+</button>
+
+            <button type="button" class="calc-btn btn-num" onclick="appendNumber('1')">1</button>
+            <button type="button" class="calc-btn btn-num" onclick="appendNumber('2')">2</button>
+            <button type="button" class="calc-btn btn-num" onclick="appendNumber('3')">3</button>
+            <button type="button" class="calc-btn btn-eq" onclick="executeCalculation()">=</button>
+
+            <button type="button" class="calc-btn btn-num" style="grid-column: span 2;" onclick="appendNumber('0')">0</button>
+            <button type="button" class="calc-btn btn-num" onclick="appendNumber('.')">.</button>
+        </div>
+    </div>
+</div>
+
 <script>
+    // Responsive Navbar Toggle Logic
+    function toggleNavbarMenu() {
+        const linksList = document.getElementById('navbarLinks');
+        linksList.classList.toggle('show');
+    }
+
     let currentSizeOffset = 0;
     
     function adjustFontSize(direction) {
@@ -246,31 +476,97 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-    // Select all data rows in your spreadsheet table
-    const tableRows = document.querySelectorAll(".record-row");
+        const tableRows = document.querySelectorAll(".record-row");
 
-    tableRows.forEach(row => {
-        // Change cursor to pointer to let users know it's interactive
-        row.style.cursor = "pointer";
-        row.title = "Double-click to quick-edit this record";
+        tableRows.forEach(row => {
+            row.style.cursor = "pointer";
+            row.title = "Double-click to quick-edit this record";
 
-        row.addEventListener("dblclick", function(event) {
-            // Prevent redirection if the user accidentally double-clicks an action button/link
-            if (event.target.closest('.cell-action-link') || event.target.closest('a') || event.target.closest('.action-cell-stack')) {
-                return;
-            }
-
-            // Extract row ID from the edit button link
-            const editLink = row.querySelector(".link-edit");
-            if (editLink) {
-                const targetUrl = editLink.getAttribute("href");
-                if (targetUrl) {
-                    window.location.href = targetUrl;
+            row.addEventListener("dblclick", function(event) {
+                if (event.target.closest('.cell-action-link') || event.target.closest('a') || event.target.closest('.action-cell-stack')) {
+                    return;
                 }
-            }
+
+                const editLink = row.querySelector(".link-edit");
+                if (editLink) {
+                    const targetUrl = editLink.getAttribute("href");
+                    if (targetUrl) {
+                        window.location.href = targetUrl;
+                    }
+                }
+            });
         });
     });
-});
+
+    /* --- Standard Pocket Calculator Implementation Logic Sandbox --- */
+    let displayVal = '0';
+    let mathExpression = '';
+    let startFreshInput = false;
+
+    const uiDisplay = document.getElementById('calcDisplay');
+    const uiHistory = document.getElementById('calcHistory');
+
+    function toggleCalcModal(show) {
+        document.getElementById('calculatorModal').style.display = show ? 'flex' : 'none';
+    }
+
+    function appendNumber(num) {
+        if (displayVal === '0' || startFreshInput) {
+            displayVal = num === '.' ? '0.' : num;
+            startFreshInput = false;
+        } else {
+            if (num === '.' && displayVal.includes('.')) return;
+            displayVal += num;
+        }
+        uiDisplay.innerText = displayVal;
+    }
+
+    function appendOperator(op) {
+        startFreshInput = false;
+        if (displayVal !== '') {
+            mathExpression += displayVal + ' ' + op + ' ';
+            displayVal = '0';
+        } else if (mathExpression !== '') {
+            mathExpression = mathExpression.slice(0, -3) + ' ' + op + ' ';
+        }
+        uiHistory.innerText = mathExpression;
+    }
+
+    function clearCalculator() {
+        displayVal = '0';
+        mathExpression = '';
+        uiDisplay.innerText = displayVal;
+        uiHistory.innerText = mathExpression;
+    }
+
+    function backspaceCalculator() {
+        if (displayVal.length > 1) {
+            displayVal = displayVal.slice(0, -1);
+        } else {
+            displayVal = '0';
+        }
+        uiDisplay.innerText = displayVal;
+    }
+
+    function executeCalculation() {
+        if (displayVal === '') return;
+        let completeFormula = mathExpression + displayVal;
+        try {
+            let answer = Function('"use strict"; return (' + completeFormula + ')')();
+            if (answer % 1 !== 0) {
+                answer = parseFloat(answer.toFixed(4));
+            }
+            uiHistory.innerText = completeFormula + ' =';
+            displayVal = String(answer);
+            mathExpression = '';
+            startFreshInput = true;
+            uiDisplay.innerText = displayVal;
+        } catch (err) {
+            uiDisplay.innerText = 'Error';
+            displayVal = '0';
+            mathExpression = '';
+        }
+    }
 </script>
 
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>

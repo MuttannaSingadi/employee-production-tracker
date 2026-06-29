@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Production System Calculations</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3><i class="fas fa-chart-bar"></i> System Metrics Summary</h3>
+        </div>
+        <div class="card-body">
+            <div class="row text-center mb-4">
+                <div class="col-md-4">
+                    <div class="p-3 border rounded bg-light">
+                        <h5>Total Completed</h5>
+                        <p class="display-6 text-success">{{ metrics.total_completed }} KM</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 border rounded bg-light">
+                        <h5>Total Pending</h5>
+                        <p class="display-6 text-danger">{{ metrics.total_pending }} KM</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 border rounded bg-light">
+                        <h5>Completion Progress</h5>
+                        <p class="display-6 text-primary">{{ metrics.completion_rate }}%</p>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-striped">
+                <tr><th>Total System Linear Capacity:</th><td>{{ metrics.total_linear }} KM</td></tr>
+                <tr><th>Accumulated Hours Logged:</th><td>{{ metrics.total_time }} Hrs</td></tr>
+                <tr><th>Current Operational Velocity:</th><td><strong>{{ metrics.efficiency }} KM / Hr</strong></td></tr>
+            </table>
+            <a href="/index" class="btn btn-secondary mt-3">Back to Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>
