@@ -55,6 +55,13 @@ class DailyTracker(db.Model):
     qc_status = db.Column(db.String(20), default="IP")
 
 
+# --- PRODUCTION SERVERLESS DATABASE INITIALIZATION HOOK ---
+@app.before_request
+def create_tables_on_startup():
+    """Ensures database schema tables exist cleanly on cloud serverless infrastructure initialization."""
+    db.create_all()
+
+
 # --- INTERNAL HELPER DATA PARSING UTILITIES ---
 
 def parse_excel_file(file_path):
@@ -515,6 +522,4 @@ def data_calculator():
     )
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()  
     app.run(debug=True)
