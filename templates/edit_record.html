@@ -34,6 +34,65 @@
             font-size: 1.1rem;
             font-weight: 700;
         }
+
+        /* Calculator Button Styling */
+.btn-warning {
+    background-color: #f59e0b;
+    padding: 10px 16px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.btn-warning:hover {
+    background-color: #d97706;
+}
+
+/* Modal Container */
+#calc-modal {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Responsive Modal */
+#calc-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;          /* Responsive width */
+    max-width: 320px;    /* Max size on desktop */
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    z-index: 9999;
+}
+
+/* Responsive Grid Buttons */
+#calc-modal .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+}
+
+#calc-modal button {
+    padding: 15px 5px; /* Larger hit area for fingers */
+    border: none;
+    border-radius: 8px;
+    background: #f1f5f9;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    touch-action: manipulation; /* Improves mobile responsiveness */
+}
+
+#calc-modal button:active { background: #cbd5e1; }
+#calc-modal button.equals { grid-row: span 2; background: #2563eb; color: white; }
+#calc-modal button.close { grid-column: span 4; background: #ef4444; color: white; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -44,6 +103,9 @@
         <div class="action-buttons">
             <button type="button" class="ctrl-btn add-btn" onclick="addNewFieldGroup()">+ Add Section</button>
             <button type="button" class="ctrl-btn clear-btn" onclick="clearLastFieldGroup()">- Clear Last</button>
+           <button type="button" class="btn btn-warning text-dark fw-bold" onclick="toggleCalcModal(true)" style="margin-top: 10px; display: inline-flex; align-items: center; cursor: pointer; border: none; font-family: inherit;">
+    🧮 Open Pocket Calculator
+</button>
         </div>
     </div>
     
@@ -201,6 +263,37 @@
             <a href="/index" class="submit-btn" style="background-color: #64748b; text-decoration: none; text-align: center; line-height: 40px; height: 40px; padding: 0;">Cancel</a>
         </div>
     </form>
+<div id="calc-modal">
+   <input type="text" id="calc-display" style="width: 100%; padding: 12px; font-size: 1.5rem; border: 1px solid #ddd; border-radius: 8px; text-align: right;" onkeypress="handleKeyboard(event)">
+    
+    <div class="calc-grid">
+        <button type="button" onclick="cDisplay('')">C</button>
+        <button type="button" onclick="appendToCalc('/')">/</button>
+        <button type="button" onclick="appendToCalc('*')">*</button>
+        <button type="button" onclick="deleteFromCalc()">DEL</button>
+        
+        <button type="button" onclick="appendToCalc('7')">7</button>
+        <button type="button" onclick="appendToCalc('8')">8</button>
+        <button type="button" onclick="appendToCalc('9')">9</button>
+        <button type="button" onclick="appendToCalc('-')">-</button>
+        
+        <button type="button" onclick="appendToCalc('4')">4</button>
+        <button type="button" onclick="appendToCalc('5')">5</button>
+        <button type="button" onclick="appendToCalc('6')">6</button>
+        <button type="button" onclick="appendToCalc('+')">+</button>
+        
+        <button type="button" onclick="appendToCalc('1')">1</button>
+        <button type="button" onclick="appendToCalc('2')">2</button>
+        <button type="button" onclick="appendToCalc('3')">3</button>
+        <button type="button" onclick="calculateResult()" class="equals">=</button>
+        
+        <button type="button" onclick="appendToCalc('0')" style="grid-column: span 2;">0</button>
+        <button type="button" onclick="appendToCalc('.')">.</button>
+        
+        <button type="button" onclick="toggleCalcModal(false)" class="close">Close</button>
+    </div>
+</div>
+
 </div>
 
 <script>
@@ -278,6 +371,45 @@ function clearLastFieldGroup() {
     if (extraGroups.length > 0) {
         container.removeChild(extraGroups[extraGroups.length - 1]);
     }
+}
+
+function toggleCalcModal(show) {
+    document.getElementById('calc-modal').style.display = show ? 'block' : 'none';
+}
+
+function appendToCalc(v) { 
+    document.getElementById('calc-display').value += v; 
+}
+
+function cDisplay(v) { 
+    document.getElementById('calc-display').value = v; 
+}
+
+function deleteFromCalc() { 
+    const d = document.getElementById('calc-display'); 
+    d.value = d.value.slice(0, -1); 
+}
+
+// Function to handle keyboard typing directly into the display
+function handleKeyboard(event) {
+    const allowedKeys = /^[0-9+\-*/.]$/;
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        calculateResult();
+    } else if (!allowedKeys.test(event.key)) {
+        event.preventDefault(); // Stop non-math characters from being typed
+    }
+}
+
+// Ensure the calculateResult function can handle whatever is typed
+function calculateResult() { 
+    const display = document.getElementById('calc-display');
+    try { 
+        // Using Function constructor for safer evaluation than eval()
+        display.value = new Function('return ' + display.value)();
+    } catch { 
+        display.value = "Error"; 
+    } 
 }
 </script>
 </body>
